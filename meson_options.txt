@@ -1,0 +1,6 @@
+option('enable-test', type: 'boolean', value: false)
+option('install-test', type: 'boolean', value: false)
+option('enable-tizen', type: 'boolean', value: false)
+option('service-db-path', type: 'string', value: '.')
+option('service-db-key-prefix', type: 'string', value: '')
+option('enable-gcov', type: 'boolean', value: false, description: 'Generate gcov package')
