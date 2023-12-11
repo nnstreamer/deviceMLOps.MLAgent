@@ -1,11 +1,10 @@
 # Machine Learning Agent
 ml_agent_incs = include_directories('.', 'include')
-ml_agent_lib_common_srcs = files('modules.c', 'gdbus-util.c', 'ml-agent-interface.c',
-  'pipeline-dbus-impl.cc', 'model-dbus-impl.cc', 'resource-dbus-impl.cc')
-ml_agent_lib_service_db_srcs = files('service-db.cc')
+ml_agent_lib_srcs = files('modules.c', 'gdbus-util.c', 'ml-agent-interface.c',
+  'pipeline-dbus-impl.cc', 'model-dbus-impl.cc', 'resource-dbus-impl.cc', 'service-db.cc')
 
 if (get_option('enable-tizen'))
-  ml_agent_lib_common_srcs += files('pkg-mgr.cc')
+  ml_agent_lib_srcs += files('pkg-mgr.cc')
 endif
 
 ml_agent_deps = [
@@ -32,7 +31,6 @@ ml_agent_db_path_arg = '-DDB_PATH="' + serviceDBPath + '"'
 serviceDBKeyPrefix = get_option('service-db-key-prefix')
 ml_agent_db_key_prefix_arg = '-DMESON_KEY_PREFIX="' + serviceDBKeyPrefix + '"'
 
-ml_agent_lib_srcs = [ml_agent_lib_common_srcs, ml_agent_lib_service_db_srcs]
 ml_agent_shared_lib = shared_library ('ml-agent',
   ml_agent_lib_srcs,
   dependencies: ml_agent_deps,
@@ -57,30 +55,6 @@ ml_agent_lib = ml_agent_shared_lib
 if get_option('default_library') == 'static'
   ml_agent_lib = ml_agent_static_lib
 endif
-
-ml_agent_lib_common_objs = ml_agent_shared_lib.extract_objects(ml_agent_lib_common_srcs)
-ml_agent_test_both_lib = both_libraries('ml-agent-test',
-  ml_agent_lib_service_db_srcs,
-  dependencies: ml_agent_deps,
-  include_directories: ml_agent_incs,
-  install: get_option('install-test'),
-  install_dir: ml_agent_install_libdir,
-  cpp_args: ['-DDB_PATH="."', ml_agent_db_key_prefix_arg],
-  objects: ml_agent_lib_common_objs,
-  version: ml_agent_version,
-  pic: true,
-)
-
-ml_agent_test_lib = ml_agent_test_both_lib.get_shared_lib()
-if get_option('default_library') == 'static'
-  ml_agent_test_lib = ml_agent_test_both_lib.get_static_lib()
-endif
-
-ml_agent_test_dep = declare_dependency(
-  dependencies: ml_agent_deps,
-  include_directories: ml_agent_incs,
-  link_with: ml_agent_test_lib,
-)
 
 ml_agent_main_file = files('main.c')
 ml_agent_executable = executable('machine-learning-agent',
