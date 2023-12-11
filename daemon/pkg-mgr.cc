@@ -4,8 +4,8 @@
  *
  * @file    pkg-mgr.cc
  * @date    16 Feb 2023
- * @brief   NNStreamer/Utilities C-API Wrapper.
- * @see	    https://github.com/nnstreamer/api
+ * @brief   Internal package manager utility header of Machine Learning agent daemon
+ * @see	    https://github.com/nnstreamer/deviceMLOps.MLAgent
  * @author  Sangjung Woo <sangjung.woo@samsung.com>
  * @bug     No known bugs except for NYI items
  */

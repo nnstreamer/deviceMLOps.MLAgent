@@ -8,7 +8,7 @@
  * @file    gdbus-util.h
  * @date    25 June 2022
  * @brief   Internal GDbus utility header of Machine Learning agent daemon
- * @see     https://github.com/nnstreamer/api
+ * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent
  * @author  Sangjung Woo <sangjung.woo@samsung.com>
  * @bug     No known bugs except for NYI items
  *

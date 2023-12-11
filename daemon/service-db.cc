@@ -2,12 +2,12 @@
 /**
  * Copyright (c) 2022 Samsung Electronics Co., Ltd. All Rights Reserved.
  *
- * @file service-db.cc
- * @date 29 Jul 2022
- * @brief Database implementation of NNStreamer/Service C-API
- * @see https://github.com/nnstreamer/api
- * @author Sangjung Woo <sangjung.woo@samsung.com>
- * @bug No known bugs except for NYI items
+ * @file    service-db.cc
+ * @date    29 Jul 2022
+ * @brief   Database implementation of ML Agent
+ * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent
+ * @author  Sangjung Woo <sangjung.woo@samsung.com>
+ * @bug     No known bugs except for NYI items
  */
 
 #include "service-db.hh"
