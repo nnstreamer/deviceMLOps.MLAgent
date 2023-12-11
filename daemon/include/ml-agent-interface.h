@@ -2,7 +2,7 @@
  * @file    ml-agent-interface.h
  * @date    5 April 2023
  * @brief   A set of exported ml-agent interfaces for managing pipelines, models, and other service.
- * @see     https://github.com/nnstreamer/api
+ * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent
  * @author  Wook Song <wook16.song@samsung.com>
  * @bug     No known bugs except for NYI items
  */

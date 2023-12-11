@@ -8,7 +8,7 @@
  * @file    pipeline-dbus-impl.cc
  * @date    20 Jul 2022
  * @brief   Implementation of pipeline dbus interface.
- * @see     https://github.com/nnstreamer/api
+ * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent
  * @author  Yongjoo Ahn <yongjoo1.ahn@samsung.com>
  * @bug     No known bugs except for NYI items
  * @details

@@ -8,7 +8,7 @@
  * @file    dbus-interface.h
  * @date    25 June 2022
  * @brief   Internal header for the definition of DBus node and interfaces.
- * @see     https://github.com/nnstreamer/api
+ * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent
  * @author  Sangjung Woo <sangjung.woo@samsung.com>
  * @bug     No known bugs except for NYI items
  *

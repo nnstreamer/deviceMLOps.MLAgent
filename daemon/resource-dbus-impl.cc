@@ -2,12 +2,12 @@
 /**
  * Copyright (c) 2023 Samsung Electronics Co., Ltd. All Rights Reserved.
  *
- * @file resource-dbus-impl.cc
- * @date 17 July 2023
- * @brief DBus implementation for Resource Interface
- * @see	https://github.com/nnstreamer/api
- * @author Sangjung Woo <sangjung.woo@samsung.com>
- * @bug No known bugs except for NYI items
+ * @file    resource-dbus-impl.cc
+ * @date    17 July 2023
+ * @brief   DBus implementation for Resource Interface
+ * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent
+ * @author  Sangjung Woo <sangjung.woo@samsung.com>
+ * @bug     No known bugs except for NYI items
  */
 
 #include <errno.h>

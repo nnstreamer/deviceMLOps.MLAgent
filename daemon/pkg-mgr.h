@@ -8,7 +8,7 @@
  * @file    pkg-mgr.h
  * @date    16 Feb 2023
  * @brief   Internal package manager utility header of Machine Learning agent daemon
- * @see     https://github.com/nnstreamer/api
+ * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent
  * @author  Sangjung Woo <sangjung.woo@samsung.com>
  * @bug     No known bugs except for NYI items
  *
