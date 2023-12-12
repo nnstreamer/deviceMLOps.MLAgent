@@ -649,6 +649,12 @@ MLServiceDB::get_model (const std::string name, std::string &model, const gint v
   std::string key_with_prefix = DB_KEY_PREFIX + std::string ("_model_");
   key_with_prefix += name;
 
+  /* check the existence of given model */
+  guint ver = (version > 0) ? version : 0U;
+  if (!is_model_registered (key_with_prefix, ver)) {
+    throw std::invalid_argument ("Failed to check the existence of " + name);
+  }
+
   if (version == 0)
     sql = g_strdup_printf (
         "SELECT json_group_array(%s) FROM tblModel WHERE key = ?1", model_info_json);
