@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <gio/gio.h>
 
+#include "log.h"
 #include "ml-agent-interface.h"
 
 /**
@@ -591,13 +592,13 @@ main (int argc, char **argv)
   try {
     testing::InitGoogleTest (&argc, argv);
   } catch (...) {
-    g_warning ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
+    ml_logw ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
   }
 
   try {
     result = RUN_ALL_TESTS ();
   } catch (...) {
-    g_warning ("catch `testing::internal::GoogleTestFailureException`");
+    ml_logw ("catch `testing::internal::GoogleTestFailureException`");
   }
 
   return result;

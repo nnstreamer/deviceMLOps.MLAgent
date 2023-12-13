@@ -61,10 +61,10 @@ gdbus_cb_resource_add (MachinelearningServiceResource *obj, GDBusMethodInvocatio
     db.connectDB ();
     db.set_resource (name, path, description, app_info);
   } catch (const std::invalid_argument &e) {
-    _E ("%s", e.what ());
+    ml_loge ("%s", e.what ());
     ret = -EINVAL;
   } catch (const std::exception &e) {
-    _E ("%s", e.what ());
+    ml_loge ("%s", e.what ());
     ret = -EIO;
   }
 
@@ -93,10 +93,10 @@ gdbus_cb_resource_get (MachinelearningServiceResource *obj,
     db.connectDB ();
     db.get_resource (name, res_info);
   } catch (const std::invalid_argument &e) {
-    _E ("%s", e.what ());
+    ml_loge ("%s", e.what ());
     ret = -EINVAL;
   } catch (const std::exception &e) {
-    _E ("%s", e.what ());
+    ml_loge ("%s", e.what ());
     ret = -EIO;
   }
 
@@ -124,10 +124,10 @@ gdbus_cb_resource_delete (MachinelearningServiceResource *obj,
     db.connectDB ();
     db.delete_resource (name);
   } catch (const std::invalid_argument &e) {
-    _E ("%s", e.what ());
+    ml_loge ("%s", e.what ());
     ret = -EINVAL;
   } catch (const std::exception &e) {
-    _E ("%s", e.what ());
+    ml_loge ("%s", e.what ());
     ret = -EIO;
   }
 
@@ -168,25 +168,26 @@ static int
 probe_resource_module (void *data)
 {
   int ret = 0;
-  _D ("probe_resource_module");
+
+  ml_logd("probe_resource_module");
 
   g_gdbus_res_instance = gdbus_get_resource_instance ();
   if (NULL == g_gdbus_res_instance) {
-    _E ("cannot get a dbus instance for the %s interface\n", DBUS_RESOURCE_INTERFACE);
+    ml_loge ("cannot get a dbus instance for the %s interface\n", DBUS_RESOURCE_INTERFACE);
     return -ENOSYS;
   }
 
   ret = gdbus_connect_signal (
       g_gdbus_res_instance, ARRAY_SIZE (res_handler_infos), res_handler_infos);
   if (ret < 0) {
-    _E ("cannot register callbacks as the dbus method invocation handlers\n ret: %d", ret);
+    ml_loge ("cannot register callbacks as the dbus method invocation handlers\n ret: %d", ret);
     ret = -ENOSYS;
     goto out;
   }
 
   ret = gdbus_export_interface (g_gdbus_res_instance, DBUS_RESOURCE_PATH);
   if (ret < 0) {
-    _E ("cannot export the dbus interface '%s' at the object path '%s'\n",
+    ml_loge ("cannot export the dbus interface '%s' at the object path '%s'\n",
         DBUS_RESOURCE_INTERFACE, DBUS_RESOURCE_PATH);
     ret = -ENOSYS;
     goto out_disconnect;

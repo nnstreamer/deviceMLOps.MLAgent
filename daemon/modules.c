@@ -52,7 +52,7 @@ init_modules (void *data)
     elem_n = elem->next;
 
     if (module->probe && module->probe (data) != 0) {
-      _E ("[%s] probe fail", module->name);
+      ml_loge ("[%s] probe fail", module->name);
       module_head = g_list_remove (module_head, (gconstpointer) module);
       elem = elem_n;
       continue;

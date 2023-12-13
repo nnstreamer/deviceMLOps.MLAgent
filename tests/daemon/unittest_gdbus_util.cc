@@ -12,6 +12,7 @@
 #include "../dbus/test-dbus-interface.h"
 #include "dbus-interface.h"
 #include "gdbus-util.h"
+#include "log.h"
 #include "test-dbus.h"
 
 /**
@@ -72,7 +73,7 @@ TEST_F (GDbusTest, call_method)
   /* Test: Call the DBus method */
   machinelearning_service_test_call_get_state_sync (proxy, &status, &result, NULL, &error);
   if (error != NULL) {
-    g_critical ("Error : %s", error->message);
+    ml_loge ("Error : %s", error->message);
     g_error_free (error);
     FAIL ();
   }
@@ -126,13 +127,13 @@ main (int argc, char **argv)
   try {
     testing::InitGoogleTest (&argc, argv);
   } catch (...) {
-    g_warning ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
+    ml_logw ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
   }
 
   try {
     result = RUN_ALL_TESTS ();
   } catch (...) {
-    g_warning ("catch `testing::internal::GoogleTestFailureException`");
+    ml_logw ("catch `testing::internal::GoogleTestFailureException`");
   }
 
   return result;

@@ -33,7 +33,7 @@ static gboolean is_session = FALSE;
 static void
 handle_sigterm (int signo)
 {
-  _D ("received SIGTERM signal %d", signo);
+  ml_logd ("received SIGTERM signal %d", signo);
   g_main_loop_quit (g_mainloop);
 }
 
@@ -45,6 +45,7 @@ static int
 postinit (void)
 {
   int ret;
+
   /** Register signal handler */
   signal (SIGTERM, handle_sigterm);
 
@@ -62,7 +63,7 @@ postinit (void)
 static int
 parse_args (gint *argc, gchar ***argv)
 {
-  GError *err;
+  GError *err = NULL;
   GOptionContext *context = NULL;
   gboolean ret;
 
@@ -74,7 +75,7 @@ parse_args (gint *argc, gchar ***argv)
 
   context = g_option_context_new (NULL);
   if (!context) {
-    _E ("Failed to call g_option_context_new\n");
+    ml_loge ("Failed to call g_option_context_new\n");
     return -ENOMEM;
   }
 
@@ -82,11 +83,10 @@ parse_args (gint *argc, gchar ***argv)
   g_option_context_set_help_enabled (context, TRUE);
   g_option_context_set_ignore_unknown_options (context, TRUE);
 
-  err = NULL;
   ret = g_option_context_parse (context, argc, argv, &err);
   g_option_context_free (context);
   if (!ret) {
-    _E ("Fail to option parsing: %s", err->message);
+    ml_loge ("Fail to option parsing: %s", err->message);
     g_clear_error (&err);
     return -EINVAL;
   }
@@ -109,11 +109,11 @@ main (int argc, char **argv)
 
   init_modules (NULL);
   if (postinit () < 0)
-    _E ("cannot init system");
+    ml_loge ("cannot init system");
 
   /* Register package manager callback */
   if (pkg_mgr_init () < 0) {
-    _E ("cannot init package manager");
+    ml_loge ("cannot init package manager");
   }
 
   g_main_loop_run (g_mainloop);
@@ -124,7 +124,7 @@ main (int argc, char **argv)
   g_mainloop = NULL;
 
   if (pkg_mgr_deinit () < 0)
-    _W ("cannot finalize package manager");
+    ml_logw ("cannot finalize package manager");
 
   return 0;
 }
