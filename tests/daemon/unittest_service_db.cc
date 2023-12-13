@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <gio/gio.h>
 
+#include "log.h"
 #include "service-db.hh"
 
 /**
@@ -24,7 +25,7 @@ TEST (serviceDB, set_pipeline_n)
   try {
     db.set_pipeline ("", "videotestsrc ! fakesink");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -33,7 +34,7 @@ TEST (serviceDB, set_pipeline_n)
   try {
     db.set_pipeline ("test_key", "");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -53,7 +54,7 @@ TEST (serviceDB, get_pipeline_n)
     std::string pipeline_description;
     db.get_pipeline ("", pipeline_description);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -72,7 +73,7 @@ TEST (serviceDB, delete_pipeline_n)
   try {
     db.delete_pipeline ("");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -92,7 +93,7 @@ TEST (serviceDB, set_model_n)
   try {
     db.set_model ("", "model", true, "description", "", &version);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -101,7 +102,7 @@ TEST (serviceDB, set_model_n)
   try {
     db.set_model ("test", "", true, "description", "", &version);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -110,7 +111,7 @@ TEST (serviceDB, set_model_n)
   try {
     db.set_model ("test", "model", true, "", "", NULL);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -169,7 +170,7 @@ TEST (serviceDB, update_model_scenario)
 
     db.delete_model ("test", 0);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 0);
@@ -190,7 +191,7 @@ TEST (serviceDB, get_model_n)
     std::string model_description;
     db.get_model ("", model_description, 0);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -200,7 +201,7 @@ TEST (serviceDB, get_model_n)
     std::string model_description;
     db.get_model ("test", model_description, -54321);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -219,7 +220,7 @@ TEST (serviceDB, update_model_description_n)
   try {
     db.update_model_description ("", 1, "description");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -228,7 +229,7 @@ TEST (serviceDB, update_model_description_n)
   try {
     db.update_model_description ("test", 1, "");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -237,7 +238,7 @@ TEST (serviceDB, update_model_description_n)
   try {
     db.update_model_description ("test", 0, "description");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -256,7 +257,7 @@ TEST (serviceDB, activate_model_n)
   try {
     db.activate_model ("", 1);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -265,7 +266,7 @@ TEST (serviceDB, activate_model_n)
   try {
     db.activate_model ("test", 0);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -284,7 +285,7 @@ TEST (serviceDB, delete_model_n)
   try {
     db.delete_model ("", 0);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -309,7 +310,7 @@ TEST (serviceDB, delete_model_unregistered_n)
   try {
     db.delete_model ("test", version);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -334,7 +335,7 @@ TEST (serviceDB, delete_model_activated_n)
   try {
     db.delete_model ("test", version);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -354,7 +355,7 @@ TEST (serviceDBNotInitalized, set_pipeline_n)
   try {
     db.set_pipeline ("test", "videotestsrc ! fakesink");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -372,7 +373,7 @@ TEST (serviceDBNotInitalized, get_pipeline_n)
     std::string pd;
     db.get_pipeline ("test", pd);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -389,7 +390,7 @@ TEST (serviceDBNotInitalized, delete_pipeline_n)
   try {
     db.delete_pipeline ("test");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -407,7 +408,7 @@ TEST (serviceDBNotInitalized, set_model_n)
     guint version;
     db.set_model ("test", "model", true, "description", "", &version);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -424,7 +425,7 @@ TEST (serviceDBNotInitalized, update_model_description_n)
   try {
     db.update_model_description ("test", 0, "description");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -441,7 +442,7 @@ TEST (serviceDBNotInitalized, activate_model_n)
   try {
     db.activate_model ("test", 0);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -459,7 +460,7 @@ TEST (serviceDBNotInitalized, get_model_n)
     std::string model_path;
     db.get_model ("test", model_path, 0);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -476,7 +477,7 @@ TEST (serviceDBNotInitalized, delete_model_n)
   try {
     db.delete_model ("test", 0U);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -495,7 +496,7 @@ TEST (serviceDB, set_resource_n)
   try {
     db.set_resource ("", "resource", "description", "");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -504,7 +505,7 @@ TEST (serviceDB, set_resource_n)
   try {
     db.set_resource ("test", "", "description", "");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -548,7 +549,7 @@ TEST (serviceDB, update_resource_scenario)
 
     db.delete_resource ("test");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 0);
@@ -570,7 +571,7 @@ TEST (serviceDB, get_resource_n)
     std::string res_description;
     db.get_resource ("", res_description);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -597,7 +598,7 @@ TEST (serviceDB, get_resource_unregistered_n)
     std::string res_description;
     db.get_resource ("test", res_description);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -618,7 +619,7 @@ TEST (serviceDB, delete_resource_n)
   try {
     db.delete_resource ("");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -643,7 +644,7 @@ TEST (serviceDB, delete_resource_unregistered_n)
   try {
     db.delete_resource ("test");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -662,7 +663,7 @@ TEST (serviceDBNotInitalized, set_resource_n)
   try {
     db.set_resource ("test", "resource", "description", "");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -680,7 +681,7 @@ TEST (serviceDBNotInitalized, get_resource_n)
     std::string res_description;
     db.get_resource ("test", res_description);
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -697,7 +698,7 @@ TEST (serviceDBNotInitalized, delete_resource_n)
   try {
     db.delete_resource ("test");
   } catch (const std::exception &e) {
-    g_critical ("Got Exception: %s", e.what ());
+    ml_loge ("Got Exception: %s", e.what ());
     gotException = 1;
   }
   EXPECT_EQ (gotException, 1);
@@ -714,13 +715,13 @@ main (int argc, char **argv)
   try {
     testing::InitGoogleTest (&argc, argv);
   } catch (...) {
-    g_warning ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
+    ml_logw ("catch 'testing::internal::<unnamed>::ClassUniqueToAlwaysTrue'");
   }
 
   try {
     result = RUN_ALL_TESTS ();
   } catch (...) {
-    g_warning ("catch `testing::internal::GoogleTestFailureException`");
+    ml_logw ("catch `testing::internal::GoogleTestFailureException`");
   }
 
   return result;

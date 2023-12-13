@@ -28,19 +28,19 @@
     dlog_print(prio, tag, "%s: %s(%d) > " fmt, __MODULE__, __func__, __LINE__, ##arg);\
   } while (0); })
 
-#define _D(fmt, arg...)		LOG_V(DLOG_DEBUG, AGENT_LOG_TAG, fmt, ##arg)
-#define _I(fmt, arg...)		LOG_V(DLOG_INFO, AGENT_LOG_TAG, fmt, ##arg)
-#define _W(fmt, arg...)		LOG_V(DLOG_WARN, AGENT_LOG_TAG, fmt, ##arg)
-#define _E(fmt, arg...)		LOG_V(DLOG_ERROR, AGENT_LOG_TAG, fmt, ##arg)
-#define _F(fmt, arg...)		LOG_V(DLOG_FATAL, AGENT_LOG_TAG, fmt, ##arg)
+#define ml_logd(fmt, arg...) LOG_V(DLOG_DEBUG, AGENT_LOG_TAG, fmt, ##arg)
+#define ml_logi(fmt, arg...) LOG_V(DLOG_INFO, AGENT_LOG_TAG, fmt, ##arg)
+#define ml_logw(fmt, arg...) LOG_V(DLOG_WARN, AGENT_LOG_TAG, fmt, ##arg)
+#define ml_loge(fmt, arg...) LOG_V(DLOG_ERROR, AGENT_LOG_TAG, fmt, ##arg)
+#define ml_logf(fmt, arg...) LOG_V(DLOG_FATAL, AGENT_LOG_TAG, fmt, ##arg)
 #else
 #include <glib.h>
 
-#define _D g_debug
-#define _I g_info
-#define _W g_warning
-#define _E g_critical
-#define _F g_error
+#define ml_logd g_debug
+#define ml_logi g_info
+#define ml_logw g_warning
+#define ml_loge g_critical
+#define ml_logf g_error
 #endif
 
 #endif /* __LOG_H__ */

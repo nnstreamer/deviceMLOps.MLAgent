@@ -167,7 +167,7 @@ MLServiceDB::connectDB ()
 
   rc = sqlite3_open (_path.c_str (), &_db);
   if (rc != SQLITE_OK) {
-    _E ("Failed to open database: %s (%d)", sqlite3_errmsg (_db), rc);
+    ml_loge ("Failed to open database: %s (%d)", sqlite3_errmsg (_db), rc);
     goto error;
   }
 
@@ -204,7 +204,7 @@ MLServiceDB::get_table_version (const std::string tbl_name, const int default_ve
 
   rc = sqlite3_prepare_v2 (_db, sql.c_str (), -1, &res, nullptr);
   if (rc != SQLITE_OK) {
-    _W ("Failed to get the version of table %s: %s (%d)", tbl_name.c_str (),
+    ml_logw ("Failed to get the version of table %s: %s (%d)", tbl_name.c_str (),
         sqlite3_errmsg (_db), rc);
     return -1;
   }
@@ -232,7 +232,7 @@ MLServiceDB::set_table_version (const std::string tbl_name, const int tbl_ver)
   sqlite3_finalize (res);
 
   if (!is_done)
-    _W ("Failed to update version of table %s.", tbl_name.c_str ());
+    ml_logw ("Failed to update version of table %s.", tbl_name.c_str ());
   return is_done;
 }
 
@@ -248,7 +248,7 @@ MLServiceDB::create_table (const std::string tbl_name)
 
   rc = sqlite3_exec (_db, sql.c_str (), nullptr, nullptr, &errmsg);
   if (rc != SQLITE_OK) {
-    _W ("Failed to create table %s: %s (%d)", tbl_name.c_str (), errmsg, rc);
+    ml_logw ("Failed to create table %s: %s (%d)", tbl_name.c_str (), errmsg, rc);
     sqlite3_clear_errmsg (errmsg);
     return false;
   }
@@ -268,7 +268,7 @@ MLServiceDB::set_transaction (bool begin)
   rc = sqlite3_exec (_db, begin ? "BEGIN TRANSACTION;" : "END TRANSACTION;",
       nullptr, nullptr, &errmsg);
   if (rc != SQLITE_OK)
-    _W ("Failed to %s transaction: %s (%d)", begin ? "begin" : "end", errmsg, rc);
+    ml_logw ("Failed to %s transaction: %s (%d)", begin ? "begin" : "end", errmsg, rc);
 
   sqlite3_clear_errmsg (errmsg);
   return (rc == SQLITE_OK);
@@ -500,7 +500,7 @@ MLServiceDB::set_model (const std::string name, const std::string model, const b
 
   long long int last_id = sqlite3_last_insert_rowid (_db);
   if (last_id == 0) {
-    _E ("Failed to get last inserted row id: %s", sqlite3_errmsg (_db));
+    ml_loge ("Failed to get last inserted row id: %s", sqlite3_errmsg (_db));
     throw std::runtime_error ("Failed to get last inserted row id.");
   }
 
@@ -518,7 +518,7 @@ MLServiceDB::set_model (const std::string name, const std::string model, const b
     throw std::runtime_error ("Failed to end transaction.");
 
   if (_version == 0) {
-    _E ("Failed to get model version with name %s: %s", name.c_str (),
+    ml_loge ("Failed to get model version with name %s: %s", name.c_str (),
         sqlite3_errmsg (_db));
     throw std::invalid_argument ("Failed to get model version of " + name);
   }
@@ -776,7 +776,7 @@ MLServiceDB::set_resource (const std::string name, const std::string path,
 
   long long int last_id = sqlite3_last_insert_rowid (_db);
   if (last_id == 0) {
-    _E ("Failed to get last inserted row id: %s", sqlite3_errmsg (_db));
+    ml_loge ("Failed to get last inserted row id: %s", sqlite3_errmsg (_db));
     throw std::runtime_error ("Failed to get last inserted row id.");
   }
 }

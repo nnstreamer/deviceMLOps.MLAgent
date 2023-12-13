@@ -26,7 +26,7 @@ int
 gdbus_export_interface (gpointer instance, const char *obj_path)
 {
   if (g_dbus_sys_conn == NULL) {
-    _E ("Cannot get the dbus connection to the system message bus");
+    ml_loge ("Cannot get the dbus connection to the system message bus");
     return -ENOSYS;
   }
 
@@ -125,7 +125,7 @@ gdbus_get_system_connection (gboolean is_session)
 
   g_dbus_sys_conn = g_bus_get_sync (bus_type, NULL, &err);
   if (g_dbus_sys_conn == NULL) {
-    _E ("Cannot connect to the system message bus: %s", err ? err->message : "Unknown error");
+    ml_loge ("Cannot connect to the system message bus: %s", err ? err->message : "Unknown error");
     g_clear_error (&err);
     return -ENOSYS;
   }
@@ -151,7 +151,7 @@ gdbus_initialize (void)
   GError *err = NULL;
 
   if (!gst_init_check (NULL, NULL, &err))
-    _E ("Failed to initialize GStreamer: %s", (err ? err->message : "Unknown error"));
+    ml_loge ("Failed to initialize GStreamer: %s", (err ? err->message : "Unknown error"));
 
   g_clear_error (&err);
 }

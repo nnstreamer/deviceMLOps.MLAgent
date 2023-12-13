@@ -72,7 +72,7 @@ gdbus_put_instance_test (MachinelearningServiceTest ** instance)
 static void
 init_test (void *data)
 {
-  g_debug ("init_test module");
+  ml_logd ("init_test module");
 
   gdbus_initialize ();
 }
@@ -95,10 +95,12 @@ static int
 probe_test (void *data)
 {
   int ret = 0;
-  g_debug ("probe_test");
+
+  ml_logd ("probe_test");
+
   g_gdbus_instance = gdbus_get_instance_test ();
   if (g_gdbus_instance == NULL) {
-    g_critical ("Cannot get the dbus instance for the %s interface.",
+    ml_loge ("Cannot get the dbus instance for the %s interface.",
         DBUS_TEST_INTERFACE);
     return -ENOSYS;
   }
@@ -106,7 +108,7 @@ probe_test (void *data)
   ret = gdbus_connect_signal (g_gdbus_instance,
       ARRAY_SIZE (g_gdbus_signal_infos), g_gdbus_signal_infos);
   if (ret < 0) {
-    g_critical ("Cannot register callbacks as the dbus method invocation handlers (ret: %d).",
+    ml_loge ("Cannot register callbacks as the dbus method invocation handlers (ret: %d).",
         ret);
     ret = -ENOSYS;
     goto out;
@@ -114,7 +116,7 @@ probe_test (void *data)
 
   ret = gdbus_export_interface (g_gdbus_instance, DBUS_TEST_PATH);
   if (ret < 0) {
-    g_critical ("Cannot export the dbus interface '%s' at the object path '%s'.",
+    ml_loge ("Cannot export the dbus interface '%s' at the object path '%s'.",
         DBUS_TEST_INTERFACE, DBUS_TEST_PATH);
     ret = -ENOSYS;
     goto out_disconnect;
