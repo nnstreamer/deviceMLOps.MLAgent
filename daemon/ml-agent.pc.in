@@ -1,5 +1,5 @@
 prefix=@PREFIX@
-exec_prefix=@PREFIX@
+exec_prefix=@EXEC_PREFIX@
 libdir=@LIB_INSTALL_DIR@
 includedir=@INCLUDE_INSTALL_DIR@
 
