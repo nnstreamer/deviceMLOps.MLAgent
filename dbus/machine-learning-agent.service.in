@@ -5,6 +5,6 @@ Description=Machine Learning Agent Daemon
 Type=dbus
 BusName=org.tizen.machinelearning.service
 SmackProcessLabel=System
-ExecStart=/usr/bin/machine-learning-agent
+ExecStart=@EXEC_PREFIX@/machine-learning-agent
 User=service_fw
 Group=service_fw

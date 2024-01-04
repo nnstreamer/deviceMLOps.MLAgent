@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.tizen.machinelearning.service
-Exec=/bin/false
+Exec=@EXEC_PREFIX@/machine-learning-agent
 SystemdService=machine-learning-agent.service
