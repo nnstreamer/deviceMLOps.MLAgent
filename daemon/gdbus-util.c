@@ -123,6 +123,7 @@ gdbus_get_system_connection (gboolean is_session)
   GError *err = NULL;
   GBusType bus_type = is_session ? G_BUS_TYPE_SESSION : G_BUS_TYPE_SYSTEM;
 
+  g_clear_object (&g_dbus_sys_conn);
   g_dbus_sys_conn = g_bus_get_sync (bus_type, NULL, &err);
   if (g_dbus_sys_conn == NULL) {
     ml_loge ("Cannot connect to the system message bus: %s", err ? err->message : "Unknown error");
