@@ -271,7 +271,6 @@ install -m 0755 packaging/run-unittest.sh %{buildroot}%{_bindir}/tizen-unittests
 %{_bindir}/unittest-ml
 %{_libdir}/libml-agent-test.a
 %{_libdir}/libml-agent-test.so*
-%{_libdir}/libunittest_mock.so*
 %if 0%{?gcov:1}
 %{_bindir}/tizen-unittests/%{name}/run-unittest.sh
 %endif

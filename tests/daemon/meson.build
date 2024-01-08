@@ -19,7 +19,7 @@ test('unittest_service_db', unittest_service_db, env: testenv, timeout: 100)
 
 unittest_gdbus_util = executable('unittest_gdbus_util',
   'unittest_gdbus_util.cc',
-  dependencies: [gtest_dep, ml_agent_test_dep, gdbus_gen_test_dep],
+  dependencies: [gtest_dep, ml_agent_test_dep],
   link_with: ml_agent_lib,
   install: get_option('install-test'),
   install_dir: unittest_install_dir,
