@@ -9,11 +9,9 @@
 
 #include <gtest/gtest.h>
 
-#include "../dbus/test-dbus-interface.h"
 #include "dbus-interface.h"
 #include "gdbus-util.h"
 #include "log.h"
-#include "test-dbus.h"
 
 /**
  * @brief Test base class for GDbus.
@@ -51,39 +49,6 @@ class GDbusTest : public ::testing::Test
     }
   }
 };
-
-/**
- * @brief Call the 'get_state' DBus method and check the result.
- */
-TEST_F (GDbusTest, call_method)
-{
-  MachinelearningServiceTest *proxy = NULL;
-  GError *error = NULL;
-  int status = 0;
-  int result = 0;
-
-  /* Test : Connect to the DBus interface */
-  proxy = machinelearning_service_test_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
-      G_DBUS_PROXY_FLAGS_NONE, DBUS_ML_BUS_NAME, DBUS_TEST_PATH, NULL, &error);
-  if (error != NULL) {
-    g_error_free (error);
-    FAIL ();
-  }
-
-  /* Test: Call the DBus method */
-  machinelearning_service_test_call_get_state_sync (proxy, &status, &result, NULL, &error);
-  if (error != NULL) {
-    ml_loge ("Error : %s", error->message);
-    g_error_free (error);
-    FAIL ();
-  }
-
-  /* Check the return value */
-  EXPECT_EQ (result, 0);
-  EXPECT_EQ (status, 1);
-
-  g_object_unref (proxy);
-}
 
 /**
  * @brief Negative test for the gdbus helper function, gdbus_export_interface().

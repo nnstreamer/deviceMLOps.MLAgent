@@ -30,12 +30,9 @@ ml_agent_test_dep = declare_dependency(
   link_with: ml_agent_test_lib
 )
 
-subdir('dbus')
-
 ml_agent_main_objs = ml_agent_executable.extract_objects(ml_agent_main_file)
 executable('machine-learning-agent-test',
-  test_dbus_impl_srcs,
-  dependencies: [ml_agent_test_dep, gdbus_gen_test_dep],
+  dependencies: ml_agent_test_dep,
   install: get_option('install-test'),
   install_dir: unittest_base_dir,
   objects: ml_agent_main_objs
