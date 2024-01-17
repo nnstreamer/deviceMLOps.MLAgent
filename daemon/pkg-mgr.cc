@@ -83,12 +83,12 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
       json_file = g_build_filename (json_path, "resource_description.json", NULL);
       break;
     default:
-      _E ("Unknown data type '%d', internal error?", json_type);
+      ml_loge ("Unknown data type '%d', internal error?", json_type);
       return;
   }
 
   if (!g_file_test (json_file, (GFileTest) (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))) {
-    _W ("Failed to find json file '%s'. RPK using ML Service API should provide this json file.",
+    ml_logw ("Failed to find json file '%s'. RPK using ML Service API should provide this json file.",
         json_file);
     return;
   }
@@ -98,7 +98,7 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
 
   json_parser_load_from_file (parser, json_file, &err);
   if (err) {
-    _E ("Failed to parse json file '%s': %s", json_file, err->message);
+    ml_loge ("Failed to parse json file '%s': %s", json_file, err->message);
     return;
   }
 
@@ -110,7 +110,7 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
   if (JSON_NODE_HOLDS_ARRAY (root)) {
     array = json_node_get_array (root);
     if (!array) {
-      _E ("Failed to get root array from json file '%s'", json_file);
+      ml_loge ("Failed to get root array from json file '%s'", json_file);
       return;
     }
 
@@ -138,7 +138,7 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
             const gchar *clear = json_object_get_string_member (object, "clear");
 
             if (!name || !model) {
-              _E ("Failed to get name or model from json file '%s'.", json_file);
+              ml_loge ("Failed to get name or model from json file '%s'.", json_file);
               continue;
             }
 
@@ -152,14 +152,14 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
                 db.delete_model (name, 0U);
               } catch (const std::exception &e) {
                 /* Ignore error case. */
-                _W ("%s", e.what ());
+                ml_logw ("%s", e.what ());
               }
             }
 
             db.set_model (name, model, active, desc ? desc : "",
                 app_info ? app_info : "", &version);
 
-            _I ("The model with name '%s' is registered as version '%u'.", name, version);
+            ml_logi ("The model with name '%s' is registered as version '%u'.", name, version);
           }
           break;
         case MLSVC_JSON_PIPELINE:
@@ -168,13 +168,13 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
             const gchar *desc = json_object_get_string_member (object, "description");
 
             if (!name || !desc) {
-              _E ("Failed to get name or description from json file '%s'.", json_file);
+              ml_loge ("Failed to get name or description from json file '%s'.", json_file);
               continue;
             }
 
             db.set_pipeline (name, desc);
 
-            _I ("The pipeline description with name '%s' is registered.", name);
+            ml_logi ("The pipeline description with name '%s' is registered.", name);
           }
           break;
         case MLSVC_JSON_RESOURCE:
@@ -185,7 +185,7 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
             const gchar *clear = json_object_get_string_member (object, "clear");
 
             if (!name || !path) {
-              _E ("Failed to get name or path from json file '%s'.", json_file);
+              ml_loge ("Failed to get name or path from json file '%s'.", json_file);
               continue;
             }
 
@@ -197,22 +197,22 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
                 db.delete_resource (name);
               } catch (const std::exception &e) {
                 /* Ignore error case. */
-                _W ("%s", e.what ());
+                ml_logw ("%s", e.what ());
               }
             }
 
             db.set_resource (name, path, desc ? desc : "", app_info ? app_info : "");
 
-            _I ("The resource with name '%s' is registered.", name);
+            ml_logi ("The resource with name '%s' is registered.", name);
           }
           break;
         default:
-          _E ("Unknown data type '%d', internal error?", json_type);
+          ml_loge ("Unknown data type '%d', internal error?", json_type);
           break;
       }
     }
   } catch (const std::exception &e) {
-    _E ("%s", e.what ());
+    ml_loge ("%s", e.what ());
   }
 
   db.disconnectDB ();
@@ -228,14 +228,14 @@ _pkg_mgr_echo_pkg_path_info (const gchar *pkg_path)
   GDir *dir;
 
   if (g_file_test (pkg_path, G_FILE_TEST_IS_DIR)) {
-    _I ("package path: %s", pkg_path);
+    ml_logi ("package path: %s", pkg_path);
 
     dir = g_dir_open (pkg_path, 0, NULL);
     if (dir) {
       const gchar *file_name;
 
       while ((file_name = g_dir_read_name (dir))) {
-        _I ("- file: %s", file_name);
+        ml_logi ("- file: %s", file_name);
       }
       g_dir_close (dir);
     }
@@ -261,12 +261,12 @@ _pkg_mgr_event_cb (const char *type, const char *package_name,
   package_info_h pkg_info = NULL;
   int ret;
 
-  _I ("type: %s, package_name: %s, event_type: %d, event_state: %d", type,
-      package_name, event_type, event_state);
+  ml_logi ("type: %s, package_name: %s, event_type: %d, event_state: %d",
+      type, package_name, event_type, event_state);
 
-  /* TODO: find out when this callback is called */
+  /** @todo find out when this callback is called */
   if (event_type == PACKAGE_MANAGER_EVENT_TYPE_RES_COPY) {
-    _I ("resource package copy is being started");
+    ml_logi ("resource package copy is being started");
     return;
   }
 
@@ -285,17 +285,17 @@ _pkg_mgr_event_cb (const char *type, const char *package_name,
     /* Get res information from package_info APIs */
     ret = package_info_create (package_name, &pkg_info);
     if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-      _E ("package_info_create failed: %d", ret);
+      ml_loge ("package_info_create failed: %d", ret);
       return;
     }
 
     g_autofree gchar *res_type = NULL;
     ret = package_info_get_res_type (pkg_info, &res_type);
     if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-      _E ("package_info_get_res_type failed: %d", ret);
+      ml_loge ("package_info_get_res_type failed: %d", ret);
       ret = package_info_destroy (pkg_info);
       if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-        _E ("package_info_destroy failed: %d", ret);
+        ml_loge ("package_info_destroy failed: %d", ret);
       }
       return;
     }
@@ -303,21 +303,21 @@ _pkg_mgr_event_cb (const char *type, const char *package_name,
     g_autofree gchar *res_version = NULL;
     ret = package_info_get_res_version (pkg_info, &res_version);
     if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-      _E ("package_info_get_res_version failed: %d", ret);
+      ml_loge ("package_info_get_res_version failed: %d", ret);
       ret = package_info_destroy (pkg_info);
       if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-        _E ("package_info_destroy failed: %d", ret);
+        ml_loge ("package_info_destroy failed: %d", ret);
       }
       return;
     }
 
-    _I ("resource package %s is installed. res_type: %s, res_version: %s",
+    ml_logi ("resource package %s is installed. res_type: %s, res_version: %s",
         package_name, res_type, res_version);
 
     if (pkg_info) {
       ret = package_info_destroy (pkg_info);
       if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-        _E ("package_info_destroy failed: %d", ret);
+        ml_loge ("package_info_destroy failed: %d", ret);
       }
     }
 
@@ -328,14 +328,14 @@ _pkg_mgr_event_cb (const char *type, const char *package_name,
       _parse_json (json_path, (mlsvc_json_type_e) t, app_info);
   } else if (event_type == PACKAGE_MANAGER_EVENT_TYPE_UNINSTALL
              && event_state == PACKAGE_MANAGER_EVENT_STATE_STARTED) {
-    _I ("resource package %s is being uninstalled", package_name);
+    ml_logi ("resource package %s is being uninstalled", package_name);
     _pkg_mgr_echo_pkg_path_info (pkg_path);
-    /* TODO: Invalidate models related to the package would be uninstalled */
+    /** @todo Invalidate models related to the package would be uninstalled */
   } else if (event_type == PACKAGE_MANAGER_EVENT_TYPE_UPDATE
              && event_state == PACKAGE_MANAGER_EVENT_STATE_COMPLETED) {
-    _I ("resource package %s is updated", package_name);
+    ml_logi ("resource package %s is updated", package_name);
     _pkg_mgr_echo_pkg_path_info (pkg_path);
-    /* TODO: Update database */
+    /** @todo Update database */
   } else {
     /* Do not consider other events: do nothing */
   }
@@ -351,7 +351,7 @@ pkg_mgr_init (void)
 
   ret = package_manager_create (&pkg_mgr);
   if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-    _E ("package_manager_create() failed: %d", ret);
+    ml_loge ("package_manager_create() failed: %d", ret);
     return -1;
   }
 
@@ -363,13 +363,13 @@ pkg_mgr_init (void)
           | PACKAGE_MANAGER_STATUS_TYPE_RES_CREATE_DIR | PACKAGE_MANAGER_STATUS_TYPE_RES_REMOVE
           | PACKAGE_MANAGER_STATUS_TYPE_RES_UNINSTALL);
   if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-    _E ("package_manager_set_event_status() failed: %d", ret);
+    ml_loge ("package_manager_set_event_status() failed: %d", ret);
     return -1;
   }
 
   ret = package_manager_set_event_cb (pkg_mgr, _pkg_mgr_event_cb, NULL);
   if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-    _E ("package_manager_set_event_cb() failed: %d", ret);
+    ml_loge ("package_manager_set_event_cb() failed: %d", ret);
     return -1;
   }
   return 0;
@@ -384,7 +384,7 @@ pkg_mgr_deinit (void)
   int ret = 0;
   ret = package_manager_destroy (pkg_mgr);
   if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-    _E ("package_manager_destroy() failed: %d", ret);
+    ml_loge ("package_manager_destroy() failed: %d", ret);
     return -1;
   }
   return 0;
