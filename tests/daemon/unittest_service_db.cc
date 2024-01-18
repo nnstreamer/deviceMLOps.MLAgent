@@ -19,25 +19,23 @@
 TEST (serviceDB, set_pipeline_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   db.connectDB ();
+
   try {
     db.set_pipeline ("", "videotestsrc ! fakesink");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
-  gotException = 0;
   try {
     db.set_pipeline ("test_key", "");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
+
   db.disconnectDB ();
 }
 
@@ -47,17 +45,17 @@ TEST (serviceDB, set_pipeline_n)
 TEST (serviceDB, get_pipeline_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
+
   db.connectDB ();
 
   try {
     std::string pipeline_description;
     db.get_pipeline ("", pipeline_description);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
+
   db.disconnectDB ();
 }
 
@@ -67,16 +65,16 @@ TEST (serviceDB, get_pipeline_n)
 TEST (serviceDB, delete_pipeline_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
+
   db.connectDB ();
 
   try {
     db.delete_pipeline ("");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
+
   db.disconnectDB ();
 }
 
@@ -86,35 +84,31 @@ TEST (serviceDB, delete_pipeline_n)
 TEST (serviceDB, set_model_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
   guint version;
 
   db.connectDB ();
+
   try {
     db.set_model ("", "model", true, "description", "", &version);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
-  gotException = 0;
   try {
     db.set_model ("test", "", true, "description", "", &version);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
-  gotException = 0;
   try {
     db.set_model ("test", "model", true, "", "", NULL);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
+
   db.disconnectDB ();
 }
 
@@ -124,7 +118,6 @@ TEST (serviceDB, set_model_n)
 TEST (serviceDB, update_model_scenario)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   db.connectDB ();
 
@@ -170,10 +163,8 @@ TEST (serviceDB, update_model_scenario)
 
     db.delete_model ("test", 0);
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    FAIL ();
   }
-  EXPECT_EQ (gotException, 0);
 
   db.disconnectDB ();
 }
@@ -184,27 +175,25 @@ TEST (serviceDB, update_model_scenario)
 TEST (serviceDB, get_model_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
+
   db.connectDB ();
 
   try {
     std::string model_description;
     db.get_model ("", model_description, 0);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
-  gotException = 0;
   try {
     std::string model_description;
     db.get_model ("test", model_description, -54321);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
+
   db.disconnectDB ();
 }
 
@@ -214,34 +203,30 @@ TEST (serviceDB, get_model_n)
 TEST (serviceDB, update_model_description_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
+
   db.connectDB ();
 
   try {
     db.update_model_description ("", 1, "description");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
-  gotException = 0;
   try {
     db.update_model_description ("test", 1, "");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
-  gotException = 0;
   try {
     db.update_model_description ("test", 0, "description");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
+
   db.disconnectDB ();
 }
 
@@ -251,25 +236,23 @@ TEST (serviceDB, update_model_description_n)
 TEST (serviceDB, activate_model_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
+
   db.connectDB ();
 
   try {
     db.activate_model ("", 1);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
-  gotException = 0;
   try {
     db.activate_model ("test", 0);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
+
   db.disconnectDB ();
 }
 
@@ -279,16 +262,16 @@ TEST (serviceDB, activate_model_n)
 TEST (serviceDB, delete_model_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
+
   db.connectDB ();
 
   try {
     db.delete_model ("", 0);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
+
   db.disconnectDB ();
 }
 
@@ -298,7 +281,6 @@ TEST (serviceDB, delete_model_n)
 TEST (serviceDB, delete_model_unregistered_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
   guint version;
 
   db.connectDB ();
@@ -309,11 +291,10 @@ TEST (serviceDB, delete_model_unregistered_n)
 
   try {
     db.delete_model ("test", version);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
   db.disconnectDB ();
 }
@@ -324,7 +305,6 @@ TEST (serviceDB, delete_model_unregistered_n)
 TEST (serviceDB, delete_model_activated_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
   guint version;
 
   db.connectDB ();
@@ -334,11 +314,10 @@ TEST (serviceDB, delete_model_activated_n)
 
   try {
     db.delete_model ("test", version);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
   db.delete_model ("test", 0U);
   db.disconnectDB ();
@@ -350,15 +329,13 @@ TEST (serviceDB, delete_model_activated_n)
 TEST (serviceDBNotInitalized, set_pipeline_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     db.set_pipeline ("test", "videotestsrc ! fakesink");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -367,16 +344,14 @@ TEST (serviceDBNotInitalized, set_pipeline_n)
 TEST (serviceDBNotInitalized, get_pipeline_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     std::string pd;
     db.get_pipeline ("test", pd);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -385,15 +360,13 @@ TEST (serviceDBNotInitalized, get_pipeline_n)
 TEST (serviceDBNotInitalized, delete_pipeline_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     db.delete_pipeline ("test");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -402,16 +375,14 @@ TEST (serviceDBNotInitalized, delete_pipeline_n)
 TEST (serviceDBNotInitalized, set_model_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     guint version;
     db.set_model ("test", "model", true, "description", "", &version);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -420,15 +391,13 @@ TEST (serviceDBNotInitalized, set_model_n)
 TEST (serviceDBNotInitalized, update_model_description_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     db.update_model_description ("test", 0, "description");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -437,15 +406,13 @@ TEST (serviceDBNotInitalized, update_model_description_n)
 TEST (serviceDBNotInitalized, activate_model_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     db.activate_model ("test", 0);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -454,16 +421,14 @@ TEST (serviceDBNotInitalized, activate_model_n)
 TEST (serviceDBNotInitalized, get_model_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     std::string model_path;
     db.get_model ("test", model_path, 0);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -472,15 +437,13 @@ TEST (serviceDBNotInitalized, get_model_n)
 TEST (serviceDBNotInitalized, delete_model_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     db.delete_model ("test", 0U);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -489,26 +452,22 @@ TEST (serviceDBNotInitalized, delete_model_n)
 TEST (serviceDB, set_resource_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   db.connectDB ();
 
   try {
     db.set_resource ("", "resource", "description", "");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
-  gotException = 0;
   try {
     db.set_resource ("test", "", "description", "");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
   db.disconnectDB ();
 }
@@ -519,7 +478,6 @@ TEST (serviceDB, set_resource_n)
 TEST (serviceDB, update_resource_scenario)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   db.connectDB ();
 
@@ -549,10 +507,8 @@ TEST (serviceDB, update_resource_scenario)
 
     db.delete_resource ("test");
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    FAIL ();
   }
-  EXPECT_EQ (gotException, 0);
 
   db.disconnectDB ();
 }
@@ -563,18 +519,16 @@ TEST (serviceDB, update_resource_scenario)
 TEST (serviceDB, get_resource_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   db.connectDB ();
 
   try {
     std::string res_description;
     db.get_resource ("", res_description);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
   db.disconnectDB ();
 }
@@ -585,7 +539,6 @@ TEST (serviceDB, get_resource_n)
 TEST (serviceDB, get_resource_unregistered_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   db.connectDB ();
 
@@ -593,15 +546,13 @@ TEST (serviceDB, get_resource_unregistered_n)
   db.set_resource ("test", "test_resource", "", "");
   db.delete_resource ("test");
 
-  gotException = 0;
   try {
     std::string res_description;
     db.get_resource ("test", res_description);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
   db.disconnectDB ();
 }
@@ -612,17 +563,15 @@ TEST (serviceDB, get_resource_unregistered_n)
 TEST (serviceDB, delete_resource_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   db.connectDB ();
 
   try {
     db.delete_resource ("");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
   db.disconnectDB ();
 }
@@ -633,7 +582,6 @@ TEST (serviceDB, delete_resource_n)
 TEST (serviceDB, delete_resource_unregistered_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   db.connectDB ();
 
@@ -643,11 +591,10 @@ TEST (serviceDB, delete_resource_unregistered_n)
 
   try {
     db.delete_resource ("test");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 
   db.disconnectDB ();
 }
@@ -658,15 +605,13 @@ TEST (serviceDB, delete_resource_unregistered_n)
 TEST (serviceDBNotInitalized, set_resource_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     db.set_resource ("test", "resource", "description", "");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -675,16 +620,14 @@ TEST (serviceDBNotInitalized, set_resource_n)
 TEST (serviceDBNotInitalized, get_resource_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     std::string res_description;
     db.get_resource ("test", res_description);
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
@@ -693,15 +636,13 @@ TEST (serviceDBNotInitalized, get_resource_n)
 TEST (serviceDBNotInitalized, delete_resource_n)
 {
   MLServiceDB &db = MLServiceDB::getInstance ();
-  int gotException = 0;
 
   try {
     db.delete_resource ("test");
+    FAIL ();
   } catch (const std::exception &e) {
-    ml_loge ("Got Exception: %s", e.what ());
-    gotException = 1;
+    /* expected */
   }
-  EXPECT_EQ (gotException, 1);
 }
 
 /**
