@@ -29,7 +29,7 @@ serviceDBPath = get_option('service-db-path')
 ml_agent_db_path_arg = '-DDB_PATH="' + serviceDBPath + '"'
 
 serviceDBKeyPrefix = get_option('service-db-key-prefix')
-ml_agent_db_key_prefix_arg = '-DMESON_KEY_PREFIX="' + serviceDBKeyPrefix + '"'
+ml_agent_db_key_prefix_arg = '-DDB_KEY_PREFIX="' + serviceDBKeyPrefix + '"'
 
 ml_agent_shared_lib = shared_library ('ml-agent',
   ml_agent_lib_srcs,

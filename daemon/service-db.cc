@@ -22,7 +22,6 @@
   } while (0)
 
 #define ML_DATABASE_PATH DB_PATH "/.ml-service.db"
-#define DB_KEY_PREFIX MESON_KEY_PREFIX
 
 /**
  * @brief The version of pipeline table schema. It should be a positive integer.
