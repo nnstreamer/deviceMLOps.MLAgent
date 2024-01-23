@@ -192,8 +192,8 @@ MLServiceDB::get_table_version (const std::string tbl_name, const int default_ve
 
   rc = sqlite3_prepare_v2 (_db, sql.c_str (), -1, &res, nullptr);
   if (rc != SQLITE_OK) {
-    ml_logw ("Failed to get the version of table %s: %s (%d)", tbl_name.c_str (),
-        sqlite3_errmsg (_db), rc);
+    ml_logw ("Failed to get the version of table %s: %s (%d)",
+        tbl_name.c_str (), sqlite3_errmsg (_db), rc);
     return -1;
   }
 
