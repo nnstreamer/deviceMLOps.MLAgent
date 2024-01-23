@@ -676,6 +676,265 @@ TEST (serviceDBNotInitalized, delete_resource_n)
 }
 
 /**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, pipeline_set_n)
+{
+  gint ret;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_pipeline_set ("", "videotestsrc ! fakesink");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_pipeline_set (NULL, "videotestsrc ! fakesink");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_pipeline_set ("test", "");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_pipeline_set ("test", NULL);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, pipeline_get_n)
+{
+  gint ret;
+  gchar *desc;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_pipeline_get ("", &desc);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_pipeline_get (NULL, &desc);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_pipeline_get ("test", NULL);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, pipeline_delete_n)
+{
+  gint ret;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_pipeline_delete ("");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_pipeline_delete (NULL);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, model_add_n)
+{
+  gint ret;
+  guint version;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_model_add ("", "model", true, "description", "", &version);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_add (NULL, "model", true, "description", "", &version);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_add ("test", "", true, "description", "", &version);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_add ("test", NULL, true, "description", "", &version);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_add ("test", "model", true, "", "", NULL);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, model_update_description_n)
+{
+  gint ret;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_model_update_description ("", 1, "description");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_update_description (NULL, 1, "description");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_update_description ("test", 1, "");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_update_description ("test", 1, NULL);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_update_description ("test", 0, "description");
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, model_activate_n)
+{
+  gint ret;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_model_activate ("", 1);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_activate (NULL, 1);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_activate ("test", 0);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, model_get_n)
+{
+  gint ret;
+  gchar *model_info;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_model_get ("", 1, &model_info);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_get (NULL, 1, &model_info);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_get ("test", 1, NULL);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, model_get_activated_n)
+{
+  gint ret;
+  gchar *model_info;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_model_get_activated ("", &model_info);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_get_activated (NULL, &model_info);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_get_activated ("test", NULL);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, model_get_all_n)
+{
+  gint ret;
+  gchar *model_info;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_model_get_all ("", &model_info);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_get_all (NULL, &model_info);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_get_all ("test", NULL);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, model_delete_n)
+{
+  gint ret;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_model_delete ("", 0U);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_model_delete (NULL, 0U);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, resource_add_n)
+{
+  gint ret;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_resource_add ("", "resource", "description", "");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_resource_add (NULL, "resource", "description", "");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_resource_add ("test", "", "description", "");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_resource_add ("test", NULL, "description", "");
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, resource_get_n)
+{
+  gint ret;
+  gchar *res_info;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_resource_get ("", &res_info);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_resource_get (NULL, &res_info);
+  EXPECT_NE (ret, 0);
+  ret = svcdb_resource_get ("test", NULL);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
+ * @brief Negative test for service-db util. Invalid param case.
+ */
+TEST (serviceDBUtil, resource_delete_n)
+{
+  gint ret;
+
+  svcdb_initialize (TEST_DB_PATH);
+
+  ret = svcdb_resource_delete ("");
+  EXPECT_NE (ret, 0);
+  ret = svcdb_resource_delete (NULL);
+  EXPECT_NE (ret, 0);
+
+  svcdb_finalize ();
+}
+
+/**
  * @brief Main gtest
  */
 int
