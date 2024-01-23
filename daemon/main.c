@@ -27,6 +27,7 @@
 static GMainLoop *g_mainloop = NULL;
 static gboolean verbose = FALSE;
 static gboolean is_session = FALSE;
+static gchar *db_path = NULL;
 
 /**
  * @brief Handle the SIGTERM signal and quit the main loop
@@ -71,6 +72,7 @@ parse_args (gint *argc, gchar ***argv)
   static GOptionEntry entries[] = {
     { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Be verbose", NULL },
     { "session", 's', 0, G_OPTION_ARG_NONE, &is_session, "Bus type is session", NULL },
+    { "path", 'p', 0, G_OPTION_ARG_STRING, &db_path, "Path to database", NULL },
     { NULL }
   };
 
@@ -109,7 +111,9 @@ main (int argc, char **argv)
   }
 
   /* path to database */
-  svcdb_initialize (DB_PATH);
+  if (!db_path)
+    db_path = g_strdup (DB_PATH);
+  svcdb_initialize (db_path);
 
   g_mainloop = g_main_loop_new (NULL, FALSE);
   gdbus_get_system_connection (is_session);
@@ -137,5 +141,7 @@ error:
   svcdb_finalize ();
 
   is_session = verbose = FALSE;
+  g_free (db_path);
+  db_path = NULL;
   return ret;
 }

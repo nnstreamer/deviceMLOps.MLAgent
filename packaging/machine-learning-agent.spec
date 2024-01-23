@@ -2,8 +2,7 @@
 # Default features for Tizen release
 # If you want to build RPM for other Linux distro, you may need to
 # touch these values for your needs.
-%if %{with tizen}
-%endif
+%bcond_with tizen
 
 # Below features are used for unittest.
 # Do not add neural network dependency to ML-Agent.
@@ -23,11 +22,6 @@
 
 # Disable a few features for DA release
 %if 0%{?_with_da_profile}
-%endif
-
-# If it is tizen, we can export Tizen API packages.
-%if %{with tizen}
-%bcond_with tizen
 %endif
 
 # Note that debug packages generate an additional build and storage cost.
