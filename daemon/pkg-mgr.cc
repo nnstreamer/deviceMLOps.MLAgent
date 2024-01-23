@@ -16,7 +16,7 @@
 #include <stdio.h>
 
 #include "pkg-mgr.h"
-#include "service-db.hh"
+#include "service-db-util.h"
 
 /**
  * @brief Internal enumeration for data types of json.
@@ -71,6 +71,7 @@ static void
 _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *app_info)
 {
   g_autofree gchar *json_file = NULL;
+  gint ret;
 
   switch (json_type) {
     case MLSVC_JSON_MODEL:
@@ -118,104 +119,96 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
   }
 
   /* Update ML service database. */
-  MLServiceDB &db = MLServiceDB::getInstance ();
-  try {
-    db.connectDB ();
+  for (guint i = 0; i < json_len; ++i) {
+    if (array)
+      object = json_array_get_object_element (array, i);
+    else
+      object = json_node_get_object (root);
 
-    for (guint i = 0; i < json_len; ++i) {
-      if (array)
-        object = json_array_get_object_element (array, i);
-      else
-        object = json_node_get_object (root);
+    switch (json_type) {
+      case MLSVC_JSON_MODEL:
+        {
+          const gchar *name = json_object_get_string_member (object, "name");
+          const gchar *model = json_object_get_string_member (object, "model");
+          const gchar *desc = json_object_get_string_member (object, "description");
+          const gchar *activate = json_object_get_string_member (object, "activate");
+          const gchar *clear = json_object_get_string_member (object, "clear");
 
-      switch (json_type) {
-        case MLSVC_JSON_MODEL:
-          {
-            const gchar *name = json_object_get_string_member (object, "name");
-            const gchar *model = json_object_get_string_member (object, "model");
-            const gchar *desc = json_object_get_string_member (object, "description");
-            const gchar *activate = json_object_get_string_member (object, "activate");
-            const gchar *clear = json_object_get_string_member (object, "clear");
+          if (!name || !model) {
+            ml_loge ("Failed to get name or model from json file '%s'.", json_file);
+            continue;
+          }
 
-            if (!name || !model) {
-              ml_loge ("Failed to get name or model from json file '%s'.", json_file);
-              continue;
-            }
+          guint version;
+          bool active = (activate && g_ascii_strcasecmp (activate, "true") == 0);
+          bool clear_old = (clear && g_ascii_strcasecmp (clear, "true") == 0);
 
-            guint version;
-            bool active = (activate && g_ascii_strcasecmp (activate, "true") == 0);
-            bool clear_old = (clear && g_ascii_strcasecmp (clear, "true") == 0);
+          /* Remove old model from database. */
+          if (clear_old) {
+            /* Ignore error case. */
+            svcdb_model_delete (name, 0U);
+          }
 
-            /* Remove old model from database. */
-            if (clear_old) {
-              try {
-                db.delete_model (name, 0U);
-              } catch (const std::exception &e) {
-                /* Ignore error case. */
-                ml_logw ("%s", e.what ());
-              }
-            }
+          ret = svcdb_model_add (name, model, active, desc ? desc : "",
+              app_info ? app_info : "", &version);
 
-            db.set_model (name, model, active, desc ? desc : "",
-                app_info ? app_info : "", &version);
-
+          if (ret == 0)
             ml_logi ("The model with name '%s' is registered as version '%u'.", name, version);
+          else
+            ml_loge ("Failed to register the model with name '%s'.", name);
+        }
+        break;
+      case MLSVC_JSON_PIPELINE:
+        {
+          const gchar *name = json_object_get_string_member (object, "name");
+          const gchar *desc = json_object_get_string_member (object, "description");
+
+          if (!name || !desc) {
+            ml_loge ("Failed to get name or description from json file '%s'.", json_file);
+            continue;
           }
-          break;
-        case MLSVC_JSON_PIPELINE:
-          {
-            const gchar *name = json_object_get_string_member (object, "name");
-            const gchar *desc = json_object_get_string_member (object, "description");
 
-            if (!name || !desc) {
-              ml_loge ("Failed to get name or description from json file '%s'.", json_file);
-              continue;
-            }
+          ret = svcdb_pipeline_set (name, desc);
 
-            db.set_pipeline (name, desc);
-
+          if (ret == 0)
             ml_logi ("The pipeline description with name '%s' is registered.", name);
+          else
+            ml_loge ("Failed to register pipeline with name '%s'.", name);
+        }
+        break;
+      case MLSVC_JSON_RESOURCE:
+        {
+          const gchar *name = json_object_get_string_member (object, "name");
+          const gchar *path = json_object_get_string_member (object, "path");
+          const gchar *desc = json_object_get_string_member (object, "description");
+          const gchar *clear = json_object_get_string_member (object, "clear");
+
+          if (!name || !path) {
+            ml_loge ("Failed to get name or path from json file '%s'.", json_file);
+            continue;
           }
-          break;
-        case MLSVC_JSON_RESOURCE:
-          {
-            const gchar *name = json_object_get_string_member (object, "name");
-            const gchar *path = json_object_get_string_member (object, "path");
-            const gchar *desc = json_object_get_string_member (object, "description");
-            const gchar *clear = json_object_get_string_member (object, "clear");
 
-            if (!name || !path) {
-              ml_loge ("Failed to get name or path from json file '%s'.", json_file);
-              continue;
-            }
+          bool clear_old = (clear && g_ascii_strcasecmp (clear, "true") == 0);
 
-            bool clear_old = (clear && g_ascii_strcasecmp (clear, "true") == 0);
+          /* Remove old resource from database. */
+          if (clear_old) {
+            /* Ignore error case. */
+            svcdb_resource_delete (name);
+          }
 
-            /* Remove old resource from database. */
-            if (clear_old) {
-              try {
-                db.delete_resource (name);
-              } catch (const std::exception &e) {
-                /* Ignore error case. */
-                ml_logw ("%s", e.what ());
-              }
-            }
+          ret = svcdb_resource_add (name, path, desc ? desc : "", app_info ? app_info : "");
 
-            db.set_resource (name, path, desc ? desc : "", app_info ? app_info : "");
-
+          if (ret == 0)
             ml_logi ("The resource with name '%s' is registered.", name);
-          }
-          break;
-        default:
-          ml_loge ("Unknown data type '%d', internal error?", json_type);
-          break;
-      }
+          else
+            ml_loge ("Failed to register the resource with name '%s'.", name);
+        }
+        break;
+      default:
+        ml_loge ("Unknown data type '%d', internal error?", json_type);
+        break;
     }
-  } catch (const std::exception &e) {
-    ml_loge ("%s", e.what ());
   }
-
-  db.disconnectDB ();
 }
 
 /**

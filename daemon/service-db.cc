@@ -11,6 +11,7 @@
  */
 
 #include "service-db.hh"
+#include "service-db-util.h"
 #include "log.h"
 
 #define sqlite3_clear_errmsg(m) \
@@ -20,8 +21,6 @@
       (m) = nullptr;            \
     }                           \
   } while (0)
-
-#define ML_DATABASE_PATH DB_PATH "/.ml-service.db"
 
 /**
  * @brief The version of pipeline table schema. It should be a positive integer.
@@ -56,18 +55,6 @@ const char *g_mlsvc_table_schema_v1[] = { [TBL_DB_INFO] = "tblMLDBInfo (name TEX
   NULL };
 
 const char **g_mlsvc_table_schema = g_mlsvc_table_schema_v1;
-
-/**
- * @brief Get an instance of MLServiceDB, which is created only once at runtime.
- * @return MLServiceDB& MLServiceDB instance
- */
-MLServiceDB &
-MLServiceDB::getInstance (void)
-{
-  static MLServiceDB instance (ML_DATABASE_PATH);
-
-  return instance;
-}
 
 /**
  * @brief Construct a new MLServiceDB object.
@@ -164,9 +151,11 @@ MLServiceDB::connectDB ()
   if (_db != nullptr)
     return;
 
-  rc = sqlite3_open (_path.c_str (), &_db);
+  g_autofree gchar *db_path = g_strdup_printf ("%s/.ml-service.db", _path.c_str ());
+  rc = sqlite3_open (db_path, &_db);
   if (rc != SQLITE_OK) {
-    ml_loge ("Failed to open database: %s (%d)", sqlite3_errmsg (_db), rc);
+    ml_loge ("Failed to open database: %s (ret: %d, path: %s)",
+        sqlite3_errmsg (_db), rc, _path.c_str ());
     goto error;
   }
 
@@ -315,13 +304,13 @@ MLServiceDB::set_pipeline (const std::string name, const std::string description
  * @param[out] description The pipeline corresponding with the given name.
  */
 void
-MLServiceDB::get_pipeline (const std::string name, std::string &description)
+MLServiceDB::get_pipeline (const std::string name, gchar **description)
 {
   char *value = nullptr;
   sqlite3_stmt *res;
 
-  if (name.empty ())
-    throw std::invalid_argument ("Invalid name parameters!");
+  if (name.empty () || !description)
+    throw std::invalid_argument ("Invalid name or description parameter!");
 
   std::string key_with_prefix = DB_KEY_PREFIX + std::string ("_pipeline_");
   key_with_prefix += name;
@@ -336,8 +325,7 @@ MLServiceDB::get_pipeline (const std::string name, std::string &description)
   sqlite3_finalize (res);
 
   if (value) {
-    description = std::string (value);
-    g_free (value);
+    *description = value;
   } else {
     throw std::invalid_argument ("Failed to get pipeline description of " + name);
   }
@@ -345,7 +333,7 @@ MLServiceDB::get_pipeline (const std::string name, std::string &description)
 
 /**
  * @brief Delete the pipeline description with a given name.
- * @param[in] name The unique name to delete
+ * @param[in] name The unique name to delete.
  */
 void
 MLServiceDB::delete_pipeline (const std::string name)
@@ -449,6 +437,7 @@ MLServiceDB::is_resource_registered (const std::string key)
  * @param[in] model The model to be stored.
  * @param[in] is_active The model is active or not.
  * @param[in] description The model description.
+ * @param[in] app_info The application information.
  * @param[out] version The version of the model.
  */
 void
@@ -630,11 +619,11 @@ MLServiceDB::activate_model (const std::string name, const guint version)
 /**
  * @brief Get the model with the given name.
  * @param[in] name The unique name to retrieve.
- * @param[out] model The model corresponding with the given name.
  * @param[in] version The version of the model. If it is 0, all models will return, if it is -1, return the active model.
+ * @param[out] model The model corresponding with the given name.
  */
 void
-MLServiceDB::get_model (const std::string name, std::string &model, const gint version)
+MLServiceDB::get_model (const std::string name, const gint version, gchar **model)
 {
   const char model_info_json[]
       = "json_object('version', CAST(version AS TEXT), 'active', active, 'path', path, 'description', description, 'app_info', app_info)";
@@ -642,8 +631,8 @@ MLServiceDB::get_model (const std::string name, std::string &model, const gint v
   char *value = nullptr;
   sqlite3_stmt *res;
 
-  if (name.empty ())
-    throw std::invalid_argument ("Invalid name parameters!");
+  if (name.empty () || !model)
+    throw std::invalid_argument ("Invalid name or model parameters!");
 
   std::string key_with_prefix = DB_KEY_PREFIX + std::string ("_model_");
   key_with_prefix += name;
@@ -675,8 +664,7 @@ MLServiceDB::get_model (const std::string name, std::string &model, const gint v
   g_free (sql);
 
   if (value) {
-    model = std::string (value);
-    g_free (value);
+    *model = value;
   } else {
     throw std::invalid_argument ("Failed to get model with name " + name
                                  + " and version " + std::to_string (version));
@@ -685,8 +673,8 @@ MLServiceDB::get_model (const std::string name, std::string &model, const gint v
 
 /**
  * @brief Delete the model.
- * @param[in] name The unique name to delete
- * @param[in] version The version of the model to delete
+ * @param[in] name The unique name to delete.
+ * @param[in] version The version of the model to delete.
  */
 void
 MLServiceDB::delete_model (const std::string name, const guint version)
@@ -740,6 +728,7 @@ MLServiceDB::delete_model (const std::string name, const guint version)
  * @param[in] name Unique name of ml-resource.
  * @param[in] path The path to be stored.
  * @param[in] description The description for ml-resource.
+ * @param[in] app_info The application information.
  */
 void
 MLServiceDB::set_resource (const std::string name, const std::string path,
@@ -786,7 +775,7 @@ MLServiceDB::set_resource (const std::string name, const std::string path,
  * @param[out] resource The resource corresponding with the given name.
  */
 void
-MLServiceDB::get_resource (const std::string name, std::string &resource)
+MLServiceDB::get_resource (const std::string name, gchar **resource)
 {
   const char res_info_json[]
       = "json_object('path', path, 'description', description, 'app_info', app_info)";
@@ -794,8 +783,8 @@ MLServiceDB::get_resource (const std::string name, std::string &resource)
   char *value = nullptr;
   sqlite3_stmt *res;
 
-  if (name.empty ())
-    throw std::invalid_argument ("Invalid name parameters!");
+  if (name.empty () || !resource)
+    throw std::invalid_argument ("Invalid name or resource parameters!");
 
   std::string key_with_prefix = DB_KEY_PREFIX + std::string ("_resource_");
   key_with_prefix += name;
@@ -819,13 +808,12 @@ MLServiceDB::get_resource (const std::string name, std::string &resource)
   if (!value)
     throw std::invalid_argument ("Failed to get resource with name " + name);
 
-  resource = std::string (value);
-  g_free (value);
+  *resource = value;
 }
 
 /**
  * @brief Delete the resource.
- * @param[in] name The unique name to delete
+ * @param[in] name The unique name to delete.
  */
 void
 MLServiceDB::delete_resource (const std::string name)
@@ -859,3 +847,381 @@ MLServiceDB::delete_resource (const std::string name)
   if (sqlite3_changes (_db) == 0)
     throw std::invalid_argument ("There is no resource with name " + name);
 }
+
+static MLServiceDB *g_svcdb_instance = nullptr;
+
+/**
+ * @brief Get the service-db instance.
+ */
+static MLServiceDB *
+svcdb_get (void)
+{
+  g_assert (g_svcdb_instance);
+  return g_svcdb_instance;
+}
+
+G_BEGIN_DECLS
+/**
+ * @brief Initialize the service-db.
+ */
+void
+svcdb_initialize (const gchar *path)
+{
+  if (g_svcdb_instance) {
+    ml_logw ("ML service DB is already opened, close old DB.");
+    delete g_svcdb_instance;
+  }
+
+  g_svcdb_instance = new MLServiceDB (path);
+  g_svcdb_instance->connectDB ();
+}
+
+/**
+ * @brief Close the service-db.
+ */
+void
+svcdb_finalize (void)
+{
+  if (g_svcdb_instance) {
+    g_svcdb_instance->disconnectDB ();
+    delete g_svcdb_instance;
+  }
+
+  g_svcdb_instance = nullptr;
+}
+
+/**
+ * @brief Set the pipeline description with given name.
+ * @note If the name already exists, the pipeline description is overwritten.
+ * @param[in] name Unique name to set the associated pipeline description.
+ * @param[in] description The pipeline description to be stored.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_pipeline_set (const gchar *name, const gchar *description)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->set_pipeline (name, description);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Get the pipeline description with given name.
+ * @param[in] name The unique name to retrieve.
+ * @param[out] description The pipeline corresponding with given name.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_pipeline_get (const gchar *name, gchar **description)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->get_pipeline (name, description);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Delete the pipeline description with a given name.
+ * @param[in] name The unique name to delete.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_pipeline_delete (const gchar *name)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->delete_pipeline (name);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Add the model with given name.
+ * @param[in] name Unique name for model.
+ * @param[in] model The model to be stored.
+ * @param[in] is_active The model is active or not.
+ * @param[in] description The model description.
+ * @param[in] app_info The application information.
+ * @param[out] version The version of the model.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_model_add (const gchar *name, const gchar *path, const bool is_active,
+    const gchar *description, const gchar *app_info, guint *version)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->set_model (name, path, is_active, description, app_info, version);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Update the model description with given name and version.
+ * @param[in] name Unique name for model.
+ * @param[in] version The version of the model.
+ * @param[in] description The model description.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_model_update_description (const gchar *name, const guint version,
+    const gchar *description)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->update_model_description (name, version, description);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Activate the model with given name.
+ * @param[in] name Unique name for model.
+ * @param[in] version The version of the model.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_model_activate (const gchar *name, const guint version)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->activate_model (name, version);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Get the model information with given name and version.
+ * @param[in] name The unique name to retrieve.
+ * @param[in] version The version of the model. If it is 0, all models will return, if it is -1, return the active model.
+ * @param[out] model_info The model information.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_model_get (const gchar *name, const guint version, gchar **model_info)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->get_model (name, version, model_info);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Get the activated model information with given name.
+ * @param[in] name The unique name to retrieve.
+ * @param[out] model_info The model information.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_model_get_activated (const gchar *name, gchar **model_info)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->get_model (name, -1, model_info);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Get the model information with given name.
+ * @param[in] name The unique name to retrieve.
+ * @param[out] model_info The model information.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_model_get_all (const gchar *name, gchar **model_info)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->get_model (name, 0, model_info);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Delete the model.
+ * @param[in] name The unique name to delete.
+ * @param[in] version The version of the model to delete.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_model_delete (const gchar *name, const guint version)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->delete_model (name, version);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Set the resource with given name.
+ * @param[in] name Unique name of ml-resource.
+ * @param[in] path The path to be stored.
+ * @param[in] description The description for ml-resource.
+ * @param[in] app_info The application information.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_resource_add (const gchar *name, const gchar *path,
+    const gchar *description, const gchar *app_info)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->set_resource (name, path, description, app_info);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Get the resource with given name.
+ * @param[in] name The unique name to retrieve.
+ * @param[out] resource The resource information.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_resource_get (const gchar *name, gchar **res_info)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->get_resource (name, res_info);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
+/**
+ * @brief Delete the resource.
+ * @param[in] name The unique name to delete.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_resource_delete (const gchar *name)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->delete_resource (name);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+G_END_DECLS

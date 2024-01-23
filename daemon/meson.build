@@ -56,14 +56,19 @@ if get_option('default_library') == 'static'
   ml_agent_lib = ml_agent_static_lib
 endif
 
+ml_agent_dep = declare_dependency(
+  dependencies: ml_agent_deps,
+  include_directories: ml_agent_incs,
+  link_with: ml_agent_lib
+)
+
 ml_agent_main_file = files('main.c')
 ml_agent_executable = executable('machine-learning-agent',
   ml_agent_main_file,
-  link_with: ml_agent_lib,
-  dependencies: ml_agent_deps,
-  include_directories: ml_agent_incs,
+  dependencies: ml_agent_dep,
   install: true,
   install_dir: ml_agent_install_bindir,
+  c_args: [ml_agent_db_path_arg, ml_agent_db_key_prefix_arg],
   pie: true
 )
 

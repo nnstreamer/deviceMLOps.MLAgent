@@ -22,6 +22,7 @@
 #include "log.h"
 #include "dbus-interface.h"
 #include "pkg-mgr.h"
+#include "service-db-util.h"
 
 static GMainLoop *g_mainloop = NULL;
 static gboolean verbose = FALSE;
@@ -100,9 +101,15 @@ parse_args (gint *argc, gchar ***argv)
 int
 main (int argc, char **argv)
 {
+  int ret = 0;
+
   if (parse_args (&argc, &argv)) {
-    return -EINVAL;
+    ret = -EINVAL;
+    goto error;
   }
+
+  /* path to database */
+  svcdb_initialize (DB_PATH);
 
   g_mainloop = g_main_loop_new (NULL, FALSE);
   gdbus_get_system_connection (is_session);
@@ -126,5 +133,9 @@ main (int argc, char **argv)
   if (pkg_mgr_deinit () < 0)
     ml_logw ("cannot finalize package manager");
 
-  return 0;
+error:
+  svcdb_finalize ();
+
+  is_session = verbose = FALSE;
+  return ret;
 }
