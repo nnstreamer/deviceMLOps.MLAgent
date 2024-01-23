@@ -28,7 +28,8 @@ class MLAgentTest : public ::testing::Test
   void SetUp () override
   {
     g_autofree gchar *current_dir = g_get_current_dir ();
-    g_autofree gchar *services_dir = g_build_filename (current_dir, "tests", "services", NULL);
+    g_autofree gchar *services_dir
+        = g_build_filename (current_dir, "tests", "services", NULL);
 
     dbus = g_test_dbus_new (G_TEST_DBUS_NONE);
     ASSERT_TRUE (dbus != nullptr);
@@ -248,9 +249,11 @@ TEST_F (MLAgentTest, model)
   gchar *model_info = NULL;
   gchar *str;
 
-  ret = ml_agent_model_register ("test-model", "/path/model1.tflite", TRUE, NULL, NULL, &ver1, NULL);
+  ret = ml_agent_model_register (
+      "test-model", "/path/model1.tflite", TRUE, NULL, NULL, &ver1, NULL);
   EXPECT_EQ (ret, 0);
-  ret = ml_agent_model_register ("test-model", "/path/model2.tflite", FALSE, NULL, NULL, &ver2, NULL);
+  ret = ml_agent_model_register (
+      "test-model", "/path/model2.tflite", FALSE, NULL, NULL, &ver2, NULL);
   EXPECT_EQ (ret, 0);
 
   ret = ml_agent_model_update_description ("test-model", ver1, "model1desc", NULL);
@@ -306,7 +309,8 @@ TEST_F (MLAgentTest, model_register_01_n)
   EXPECT_NE (ret, 0);
   ret = ml_agent_model_register ("test-model", "", FALSE, NULL, NULL, &ver, NULL);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_register ("test-model", "/path/model.tflite", FALSE, NULL, NULL, NULL, NULL);
+  ret = ml_agent_model_register (
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, NULL, NULL);
   EXPECT_NE (ret, 0);
 }
 
@@ -318,7 +322,8 @@ TEST_F (MLAgentTest, model_update_description_01_n)
   gint ret;
   guint ver;
 
-  ret = ml_agent_model_register ("test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+  ret = ml_agent_model_register (
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
   EXPECT_EQ (ret, 0);
 
   ret = ml_agent_model_update_description (NULL, ver, "desc", NULL);
@@ -352,7 +357,8 @@ TEST_F (MLAgentTest, model_activate_01_n)
   gint ret;
   guint ver;
 
-  ret = ml_agent_model_register ("test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+  ret = ml_agent_model_register (
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
   EXPECT_EQ (ret, 0);
 
   ret = ml_agent_model_activate (NULL, ver, NULL);
@@ -383,7 +389,8 @@ TEST_F (MLAgentTest, model_get_01_n)
   guint ver;
   gchar *model_info = NULL;
 
-  ret = ml_agent_model_register ("test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+  ret = ml_agent_model_register (
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
   EXPECT_EQ (ret, 0);
 
   ret = ml_agent_model_get (NULL, ver, &model_info, NULL);
@@ -416,7 +423,8 @@ TEST_F (MLAgentTest, model_get_activated_01_n)
   guint ver;
   gchar *model_info = NULL;
 
-  ret = ml_agent_model_register ("test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+  ret = ml_agent_model_register (
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
   EXPECT_EQ (ret, 0);
 
   ret = ml_agent_model_get_activated (NULL, &model_info, NULL);
@@ -466,7 +474,8 @@ TEST_F (MLAgentTest, model_delete_01_n)
   gint ret;
   guint ver;
 
-  ret = ml_agent_model_register ("test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+  ret = ml_agent_model_register (
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
   EXPECT_EQ (ret, 0);
 
   ret = ml_agent_model_delete (NULL, ver, NULL);

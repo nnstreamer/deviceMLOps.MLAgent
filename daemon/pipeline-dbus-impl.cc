@@ -5,14 +5,13 @@
  */
 
 /**
- * @file    pipeline-dbus-impl.cc
- * @date    20 Jul 2022
- * @brief   Implementation of pipeline dbus interface.
- * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent
- * @author  Yongjoo Ahn <yongjoo1.ahn@samsung.com>
- * @bug     No known bugs except for NYI items
- * @details
- *    This implements the pipeline dbus interface.
+ * @file      pipeline-dbus-impl.cc
+ * @date      20 Jul 2022
+ * @brief     Implementation of pipeline dbus interface.
+ * @see       https://github.com/nnstreamer/deviceMLOps.MLAgent
+ * @author    Yongjoo Ahn <yongjoo1.ahn@samsung.com>
+ * @bug       No known bugs except for NYI items
+ * @details   This implements the pipeline dbus interface.
  */
 
 #include <glib.h>
@@ -412,7 +411,8 @@ dbus_cb_core_get_state (MachinelearningServicePipeline *obj,
   g_mutex_unlock (&p->lock);
 
   if (sc_ret == GST_STATE_CHANGE_FAILURE) {
-    ml_loge ("Failed to get the state of the pipline whose service name is %s.", p->service_name);
+    ml_loge ("Failed to get the state of the pipline whose service name is %s.",
+        p->service_name);
     result = -ESTRPIPE;
     machinelearning_service_pipeline_complete_get_state (obj, invoc, result, (gint) state);
     return TRUE;

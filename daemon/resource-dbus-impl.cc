@@ -169,7 +169,7 @@ probe_resource_module (void *data)
 {
   int ret = 0;
 
-  ml_logd("probe_resource_module");
+  ml_logd ("probe_resource_module");
 
   g_gdbus_res_instance = gdbus_get_resource_instance ();
   if (NULL == g_gdbus_res_instance) {
