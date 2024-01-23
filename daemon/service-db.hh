@@ -31,26 +31,24 @@ class MLServiceDB
   virtual void connectDB ();
   virtual void disconnectDB ();
   virtual void set_pipeline (const std::string name, const std::string description);
-  virtual void get_pipeline (const std::string name, std::string &description);
+  virtual void get_pipeline (const std::string name, gchar **description);
   virtual void delete_pipeline (const std::string name);
   virtual void set_model (const std::string name, const std::string model, const bool is_active,
       const std::string description, const std::string app_info, guint *version);
   virtual void update_model_description (const std::string name,
       const guint version, const std::string description);
   virtual void activate_model (const std::string name, const guint version);
-  virtual void get_model (const std::string name, std::string &model, const gint version);
+  virtual void get_model (const std::string name, const gint version, gchar **model);
   virtual void delete_model (const std::string name, const guint version);
   virtual void set_resource (const std::string name, const std::string path,
       const std::string description, const std::string app_info);
-  virtual void get_resource (const std::string name, std::string &resource);
+  virtual void get_resource (const std::string name, gchar **resource);
   virtual void delete_resource (const std::string name);
 
-  static MLServiceDB &getInstance (void);
-
-  private:
   MLServiceDB (std::string path);
   virtual ~MLServiceDB ();
 
+  private:
   void initDB ();
   int get_table_version (const std::string tbl_name, const int default_ver);
   bool set_table_version (const std::string tbl_name, const int tbl_ver);

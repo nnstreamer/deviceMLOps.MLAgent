@@ -19,7 +19,7 @@
 #include "log.h"
 #include "modules.h"
 #include "resource-dbus.h"
-#include "service-db.hh"
+#include "service-db-util.h"
 
 static MachinelearningServiceResource *g_gdbus_res_instance = NULL;
 
@@ -54,21 +54,9 @@ static gboolean
 gdbus_cb_resource_add (MachinelearningServiceResource *obj, GDBusMethodInvocation *invoc,
     const gchar *name, const gchar *path, const gchar *description, const gchar *app_info)
 {
-  int ret = 0;
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  gint ret = 0;
 
-  try {
-    db.connectDB ();
-    db.set_resource (name, path, description, app_info);
-  } catch (const std::invalid_argument &e) {
-    ml_loge ("%s", e.what ());
-    ret = -EINVAL;
-  } catch (const std::exception &e) {
-    ml_loge ("%s", e.what ());
-    ret = -EIO;
-  }
-
-  db.disconnectDB ();
+  ret = svcdb_resource_add (name, path, description, app_info);
   machinelearning_service_resource_complete_add (obj, invoc, ret);
 
   return TRUE;
@@ -85,23 +73,11 @@ static gboolean
 gdbus_cb_resource_get (MachinelearningServiceResource *obj,
     GDBusMethodInvocation *invoc, const gchar *name)
 {
-  int ret = 0;
-  std::string res_info;
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  gint ret = 0;
+  g_autofree gchar *res_info = NULL;
 
-  try {
-    db.connectDB ();
-    db.get_resource (name, res_info);
-  } catch (const std::invalid_argument &e) {
-    ml_loge ("%s", e.what ());
-    ret = -EINVAL;
-  } catch (const std::exception &e) {
-    ml_loge ("%s", e.what ());
-    ret = -EIO;
-  }
-
-  db.disconnectDB ();
-  machinelearning_service_resource_complete_get (obj, invoc, res_info.c_str (), ret);
+  ret = svcdb_resource_get (name, &res_info);
+  machinelearning_service_resource_complete_get (obj, invoc, res_info, ret);
 
   return TRUE;
 }
@@ -117,21 +93,9 @@ static gboolean
 gdbus_cb_resource_delete (MachinelearningServiceResource *obj,
     GDBusMethodInvocation *invoc, const gchar *name)
 {
-  int ret = 0;
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  gint ret = 0;
 
-  try {
-    db.connectDB ();
-    db.delete_resource (name);
-  } catch (const std::invalid_argument &e) {
-    ml_loge ("%s", e.what ());
-    ret = -EINVAL;
-  } catch (const std::exception &e) {
-    ml_loge ("%s", e.what ());
-    ret = -EIO;
-  }
-
-  db.disconnectDB ();
+  ret = svcdb_resource_delete (name);
   machinelearning_service_resource_complete_delete (obj, invoc, ret);
 
   return TRUE;

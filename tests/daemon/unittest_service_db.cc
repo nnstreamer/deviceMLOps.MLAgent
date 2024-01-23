@@ -12,13 +12,16 @@
 
 #include "log.h"
 #include "service-db.hh"
+#include "service-db-util.h"
+
+#define TEST_DB_PATH "."
 
 /**
  * @brief Negative test for set_pipeline. Invalid param case (empty name or description).
  */
 TEST (serviceDB, set_pipeline_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
@@ -44,13 +47,20 @@ TEST (serviceDB, set_pipeline_n)
  */
 TEST (serviceDB, get_pipeline_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
   try {
-    std::string pipeline_description;
-    db.get_pipeline ("", pipeline_description);
+    gchar *pipeline_description;
+    db.get_pipeline ("", &pipeline_description);
+    FAIL ();
+  } catch (const std::exception &e) {
+    /* expected */
+  }
+
+  try {
+    db.get_pipeline ("test", NULL);
     FAIL ();
   } catch (const std::exception &e) {
     /* expected */
@@ -64,7 +74,7 @@ TEST (serviceDB, get_pipeline_n)
  */
 TEST (serviceDB, delete_pipeline_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
@@ -83,7 +93,7 @@ TEST (serviceDB, delete_pipeline_n)
  */
 TEST (serviceDB, set_model_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
   guint version;
 
   db.connectDB ();
@@ -117,13 +127,13 @@ TEST (serviceDB, set_model_n)
  */
 TEST (serviceDB, update_model_scenario)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
   /* No exception to add, get, and delete model with name 'test'. */
   try {
-    std::string model_info;
+    gchar *model_info;
     gchar *pos;
     guint version, version_active;
 
@@ -131,35 +141,39 @@ TEST (serviceDB, update_model_scenario)
     db.set_model ("test", "test_model2", false, "model2_description", "", &version);
 
     /* Check model info contains added string. */
-    db.get_model ("test", model_info, 0);
-    pos = g_strstr_len (model_info.c_str (), -1, "test_model1");
+    db.get_model ("test", 0, &model_info);
+    pos = g_strstr_len (model_info, -1, "test_model1");
     EXPECT_TRUE (pos != NULL);
-    pos = g_strstr_len (model_info.c_str (), -1, "test_model2");
+    pos = g_strstr_len (model_info, -1, "test_model2");
     EXPECT_TRUE (pos != NULL);
-    pos = g_strstr_len (model_info.c_str (), -1, "model1_description");
+    pos = g_strstr_len (model_info, -1, "model1_description");
     EXPECT_TRUE (pos != NULL);
-    pos = g_strstr_len (model_info.c_str (), -1, "model2_description");
+    pos = g_strstr_len (model_info, -1, "model2_description");
     EXPECT_TRUE (pos != NULL);
+    g_free (model_info);
 
-    db.get_model ("test", model_info, version);
-    pos = g_strstr_len (model_info.c_str (), -1, "test_model2");
+    db.get_model ("test", version, &model_info);
+    pos = g_strstr_len (model_info, -1, "test_model2");
     EXPECT_TRUE (pos != NULL);
-    pos = g_strstr_len (model_info.c_str (), -1, "model2_description");
+    pos = g_strstr_len (model_info, -1, "model2_description");
     EXPECT_TRUE (pos != NULL);
+    g_free (model_info);
 
-    db.get_model ("test", model_info, -1);
-    pos = g_strstr_len (model_info.c_str (), -1, "test_model1");
+    db.get_model ("test", -1, &model_info);
+    pos = g_strstr_len (model_info, -1, "test_model1");
     EXPECT_TRUE (pos != NULL);
-    pos = g_strstr_len (model_info.c_str (), -1, "model1_description");
+    pos = g_strstr_len (model_info, -1, "model1_description");
     EXPECT_TRUE (pos != NULL);
+    g_free (model_info);
 
     db.activate_model ("test", version);
     db.update_model_description ("test", version, "updated_desc_model2");
-    db.get_model ("test", model_info, -1);
-    pos = g_strstr_len (model_info.c_str (), -1, "test_model2");
+    db.get_model ("test", -1, &model_info);
+    pos = g_strstr_len (model_info, -1, "test_model2");
     EXPECT_TRUE (pos != NULL);
-    pos = g_strstr_len (model_info.c_str (), -1, "updated_desc_model2");
+    pos = g_strstr_len (model_info, -1, "updated_desc_model2");
     EXPECT_TRUE (pos != NULL);
+    g_free (model_info);
 
     db.delete_model ("test", 0);
   } catch (const std::exception &e) {
@@ -174,21 +188,28 @@ TEST (serviceDB, update_model_scenario)
  */
 TEST (serviceDB, get_model_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
   try {
-    std::string model_description;
-    db.get_model ("", model_description, 0);
+    gchar *model_description;
+    db.get_model ("", 0, &model_description);
     FAIL ();
   } catch (const std::exception &e) {
     /* expected */
   }
 
   try {
-    std::string model_description;
-    db.get_model ("test", model_description, -54321);
+    gchar *model_description;
+    db.get_model ("test", -54321, &model_description);
+    FAIL ();
+  } catch (const std::exception &e) {
+    /* expected */
+  }
+
+  try {
+    db.get_model ("test", 0, NULL);
     FAIL ();
   } catch (const std::exception &e) {
     /* expected */
@@ -202,7 +223,7 @@ TEST (serviceDB, get_model_n)
  */
 TEST (serviceDB, update_model_description_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
@@ -235,7 +256,7 @@ TEST (serviceDB, update_model_description_n)
  */
 TEST (serviceDB, activate_model_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
@@ -261,7 +282,7 @@ TEST (serviceDB, activate_model_n)
  */
 TEST (serviceDB, delete_model_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
@@ -280,7 +301,7 @@ TEST (serviceDB, delete_model_n)
  */
 TEST (serviceDB, delete_model_unregistered_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
   guint version;
 
   db.connectDB ();
@@ -304,7 +325,7 @@ TEST (serviceDB, delete_model_unregistered_n)
  */
 TEST (serviceDB, delete_model_activated_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
   guint version;
 
   db.connectDB ();
@@ -328,7 +349,7 @@ TEST (serviceDB, delete_model_activated_n)
  */
 TEST (serviceDBNotInitalized, set_pipeline_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
     db.set_pipeline ("test", "videotestsrc ! fakesink");
@@ -343,11 +364,11 @@ TEST (serviceDBNotInitalized, set_pipeline_n)
  */
 TEST (serviceDBNotInitalized, get_pipeline_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
-    std::string pd;
-    db.get_pipeline ("test", pd);
+    gchar *pd;
+    db.get_pipeline ("test", &pd);
     FAIL ();
   } catch (const std::exception &e) {
     /* expected */
@@ -359,7 +380,7 @@ TEST (serviceDBNotInitalized, get_pipeline_n)
  */
 TEST (serviceDBNotInitalized, delete_pipeline_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
     db.delete_pipeline ("test");
@@ -374,7 +395,7 @@ TEST (serviceDBNotInitalized, delete_pipeline_n)
  */
 TEST (serviceDBNotInitalized, set_model_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
     guint version;
@@ -390,7 +411,7 @@ TEST (serviceDBNotInitalized, set_model_n)
  */
 TEST (serviceDBNotInitalized, update_model_description_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
     db.update_model_description ("test", 0, "description");
@@ -405,7 +426,7 @@ TEST (serviceDBNotInitalized, update_model_description_n)
  */
 TEST (serviceDBNotInitalized, activate_model_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
     db.activate_model ("test", 0);
@@ -420,11 +441,11 @@ TEST (serviceDBNotInitalized, activate_model_n)
  */
 TEST (serviceDBNotInitalized, get_model_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
-    std::string model_path;
-    db.get_model ("test", model_path, 0);
+    gchar *model_path;
+    db.get_model ("test", 0, &model_path);
     FAIL ();
   } catch (const std::exception &e) {
     /* expected */
@@ -436,7 +457,7 @@ TEST (serviceDBNotInitalized, get_model_n)
  */
 TEST (serviceDBNotInitalized, delete_model_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
     db.delete_model ("test", 0U);
@@ -451,7 +472,7 @@ TEST (serviceDBNotInitalized, delete_model_n)
  */
 TEST (serviceDB, set_resource_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
@@ -477,33 +498,35 @@ TEST (serviceDB, set_resource_n)
  */
 TEST (serviceDB, update_resource_scenario)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
   /* No exception to add, get, and delete resources with name 'test'. */
   try {
-    std::string res_info;
+    gchar *res_info;
     gchar *pos;
 
     db.set_resource ("test", "test_resource1", "res1_description", "");
     db.set_resource ("test", "test_resource2", "res2_description", "");
 
     /* Check res info contains added string. */
-    db.get_resource ("test", res_info);
-    pos = g_strstr_len (res_info.c_str (), -1, "test_resource1");
+    db.get_resource ("test", &res_info);
+    pos = g_strstr_len (res_info, -1, "test_resource1");
     EXPECT_TRUE (pos != NULL);
-    pos = g_strstr_len (res_info.c_str (), -1, "test_resource2");
+    pos = g_strstr_len (res_info, -1, "test_resource2");
     EXPECT_TRUE (pos != NULL);
-    pos = g_strstr_len (res_info.c_str (), -1, "res1_description");
+    pos = g_strstr_len (res_info, -1, "res1_description");
     EXPECT_TRUE (pos != NULL);
-    pos = g_strstr_len (res_info.c_str (), -1, "res2_description");
+    pos = g_strstr_len (res_info, -1, "res2_description");
     EXPECT_TRUE (pos != NULL);
+    g_free (res_info);
 
     db.set_resource ("test", "test_resource2", "updated_desc_res2", "");
-    db.get_resource ("test", res_info);
-    pos = g_strstr_len (res_info.c_str (), -1, "updated_desc_res2");
+    db.get_resource ("test", &res_info);
+    pos = g_strstr_len (res_info, -1, "updated_desc_res2");
     EXPECT_TRUE (pos != NULL);
+    g_free (res_info);
 
     db.delete_resource ("test");
   } catch (const std::exception &e) {
@@ -518,13 +541,20 @@ TEST (serviceDB, update_resource_scenario)
  */
 TEST (serviceDB, get_resource_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
   try {
-    std::string res_description;
-    db.get_resource ("", res_description);
+    gchar *res_description;
+    db.get_resource ("", &res_description);
+    FAIL ();
+  } catch (const std::exception &e) {
+    /* expected */
+  }
+
+  try {
+    db.get_resource ("test", NULL);
     FAIL ();
   } catch (const std::exception &e) {
     /* expected */
@@ -538,7 +568,7 @@ TEST (serviceDB, get_resource_n)
  */
 TEST (serviceDB, get_resource_unregistered_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
@@ -547,8 +577,8 @@ TEST (serviceDB, get_resource_unregistered_n)
   db.delete_resource ("test");
 
   try {
-    std::string res_description;
-    db.get_resource ("test", res_description);
+    gchar *res_description;
+    db.get_resource ("test", &res_description);
     FAIL ();
   } catch (const std::exception &e) {
     /* expected */
@@ -562,7 +592,7 @@ TEST (serviceDB, get_resource_unregistered_n)
  */
 TEST (serviceDB, delete_resource_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
@@ -581,7 +611,7 @@ TEST (serviceDB, delete_resource_n)
  */
 TEST (serviceDB, delete_resource_unregistered_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   db.connectDB ();
 
@@ -604,7 +634,7 @@ TEST (serviceDB, delete_resource_unregistered_n)
  */
 TEST (serviceDBNotInitalized, set_resource_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
     db.set_resource ("test", "resource", "description", "");
@@ -619,11 +649,11 @@ TEST (serviceDBNotInitalized, set_resource_n)
  */
 TEST (serviceDBNotInitalized, get_resource_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
-    std::string res_description;
-    db.get_resource ("test", res_description);
+    gchar *res_description;
+    db.get_resource ("test", &res_description);
     FAIL ();
   } catch (const std::exception &e) {
     /* expected */
@@ -635,7 +665,7 @@ TEST (serviceDBNotInitalized, get_resource_n)
  */
 TEST (serviceDBNotInitalized, delete_resource_n)
 {
-  MLServiceDB &db = MLServiceDB::getInstance ();
+  MLServiceDB db (TEST_DB_PATH);
 
   try {
     db.delete_resource ("test");

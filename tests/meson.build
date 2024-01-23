@@ -35,6 +35,7 @@ executable('machine-learning-agent-test',
   dependencies: ml_agent_test_dep,
   install: get_option('install-test'),
   install_dir: unittest_base_dir,
+  c_args: ['-DDB_PATH="."', ml_agent_db_key_prefix_arg],
   objects: ml_agent_main_objs
 )
 
