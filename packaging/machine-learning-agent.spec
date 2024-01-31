@@ -173,8 +173,7 @@ CXXFLAGS=`echo $CXXFLAGS | sed -e "s|-Wp,-D_FORTIFY_SOURCE=[1-9]||g"`
 %define enable_test_coverage -Db_coverage=false
 %endif # unit_test
 
-mkdir -p %{builddir}
-
+rm -rf %{builddir}
 meson --buildtype=plain --prefix=%{_prefix} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
 	--bindir=%{_bindir} --includedir=%{_includedir} \
 	%{enable_test} %{install_test} %{enable_test_coverage} %{enable_gcov} \
