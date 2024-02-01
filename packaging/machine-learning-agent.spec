@@ -174,13 +174,13 @@ CXXFLAGS=`echo $CXXFLAGS | sed -e "s|-Wp,-D_FORTIFY_SOURCE=[1-9]||g"`
 %endif # unit_test
 
 rm -rf %{builddir}
-meson --buildtype=plain --prefix=%{_prefix} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
+meson setup --buildtype=plain --prefix=%{_prefix} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
 	--bindir=%{_bindir} --includedir=%{_includedir} \
 	%{enable_test} %{install_test} %{enable_test_coverage} %{enable_gcov} \
 	%{enable_tizen} %{service_db_path} %{service_db_key_prefix} \
 	%{builddir}
 
-ninja -C build %{?_smp_mflags}
+meson compile -C %{builddir} %{?_smp_mflags}
 
 export MLAGENT_SOURCE_ROOT_PATH=$(pwd)
 export MLAGENT_BUILD_ROOT_PATH=$(pwd)/%{builddir}
@@ -194,7 +194,7 @@ bash %{test_script} ./tests/daemon/unittest_gdbus_util
 %endif # unit_test
 
 %install
-DESTDIR=%{buildroot} ninja -C %{builddir} %{?_smp_mflags} install
+meson install -C %{builddir} --destdir=%{buildroot}
 
 %if 0%{?unit_test}
 %if 0%{?testcoverage}
