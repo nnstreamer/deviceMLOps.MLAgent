@@ -124,7 +124,6 @@ HTML pages of lcov results of Machine Learning Agent generated during rpm build.
 %define enable_tizen -Denable-tizen=false
 %define service_db_path ""
 %define service_db_key_prefix %{nil}
-%define enable_gcov -Denable-gcov=false
 
 # To set prefix, use this line
 ### define service_db_key_prefix -Dservice-db-key-prefix='some-prefix'
@@ -133,10 +132,6 @@ HTML pages of lcov results of Machine Learning Agent generated during rpm build.
 %define enable_tizen -Denable-tizen=true
 %define service_db_path -Dservice-db-path=%{TZ_SYS_GLOBALUSER_DB}
 %endif # tizen
-
-%if 0%{?gcov}
-%define enable_gcov -Denable-gcov=true
-%endif
 
 %prep
 %setup -q
@@ -176,7 +171,7 @@ CXXFLAGS=`echo $CXXFLAGS | sed -e "s|-Wp,-D_FORTIFY_SOURCE=[1-9]||g"`
 rm -rf %{builddir}
 meson setup --buildtype=plain --prefix=%{_prefix} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
 	--bindir=%{_bindir} --includedir=%{_includedir} \
-	%{enable_test} %{install_test} %{enable_test_coverage} %{enable_gcov} \
+	%{enable_test} %{install_test} %{enable_test_coverage} \
 	%{enable_tizen} %{service_db_path} %{service_db_key_prefix} \
 	%{builddir}
 
