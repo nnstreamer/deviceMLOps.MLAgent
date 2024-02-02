@@ -1,17 +1,12 @@
 # Install path for unittest
-unittest_base_dir = join_paths(ml_agent_install_bindir, 'unittest-ml')
-unittest_install_dir = join_paths(unittest_base_dir,'tests')
-
-# Set dependency and test-env
-testenv = environment()
-testenv.set('MLAGENT_SOURCE_ROOT_PATH', meson.source_root())
-testenv.set('MLAGENT_BUILD_ROOT_PATH', meson.build_root())
+test_base_dir = join_paths(ml_agent_install_bindir, 'ml-agent-test')
+unittest_install_dir = join_paths(test_base_dir, 'unittests')
 
 ml_agent_lib_objs = ml_agent_lib.extract_objects(ml_agent_lib_srcs)
 ml_agent_test_both_lib = both_libraries('ml-agent-test',
   dependencies: ml_agent_deps,
   include_directories: ml_agent_incs,
-  install: get_option('install-test'),
+  install: true,
   install_dir: ml_agent_install_libdir,
   cpp_args: ['-DDB_PATH="."', ml_agent_db_key_prefix_arg],
   objects: ml_agent_lib_objs,
@@ -33,11 +28,19 @@ ml_agent_test_dep = declare_dependency(
 ml_agent_main_objs = ml_agent_executable.extract_objects(ml_agent_main_file)
 executable('machine-learning-agent-test',
   dependencies: ml_agent_test_dep,
-  install: get_option('install-test'),
-  install_dir: unittest_base_dir,
+  install: true,
+  install_dir: test_base_dir,
   c_args: ['-DDB_PATH="."', ml_agent_db_key_prefix_arg],
   objects: ml_agent_main_objs
 )
 
 subdir('services')
-subdir('daemon')
+# Run tests
+if get_option('enable-test')
+  gtest_dep = dependency('gtest', required: false)
+  if gtest_dep.found()
+    subdir('daemon')
+  else
+    warning('The enable-test option requires google-test.')
+  endif
+endif

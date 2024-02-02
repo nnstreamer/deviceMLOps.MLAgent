@@ -2,26 +2,18 @@
 # Default features for Tizen release
 # If you want to build RPM for other Linux distro, you may need to
 # touch these values for your needs.
-%bcond_with tizen
 
-# Below features are used for unittest.
-# Do not add neural network dependency to ML-Agent.
-%define		release_test 0
+# Create an option to build without tizen (`--without tizen`), thus default
+# building with it
+# https://rpm-software-management.github.io/rpm/manual/conditionalbuilds.html
+%bcond_without tizen
 
-# To generage gcov package, --define "gcov 1"
-%if 0%{?gcov:1}
-%define		unit_test 1
-%define		release_test 1
-%define		testcoverage 1
-%endif
 ###########################################################################
-# Disable a few features for TV release
-%if "%{?profile}" == "tv"
-%endif
-
-# Disable a few features for DA release
-%if 0%{?_with_da_profile}
-%endif
+# Macros for building and testing option control
+%define		builddir build
+%define		source_root %{_builddir}/%{?buildsubdir}
+%define		test_script %{source_root}/packaging/run_unittests.sh
+%define		test_base_dir %{_bindir}/ml-agent-test
 
 # Note that debug packages generate an additional build and storage cost.
 # If you do not need debug packages, run '$ gbs build ... --define "_skip_debug_rpm 1"'.
@@ -29,11 +21,25 @@
 %global debug_package %{nil}
 %global __debug_install_post %{nil}
 %endif
+
 ###########################################################################
-# Macros for building and testing option control
-%define		builddir build
-%define		source_root %{_builddir}/%{?buildsubdir}
-%define		test_script %{source_root}/packaging/run_unittests.sh
+# Define build options
+
+# Below features are used for unittest.
+# Do not add neural network dependency to ML-Agent.
+%define enable_test -Denable-test=false
+%define install_test -Dinstall-test=false
+
+# To generage gcov package, --define "gcov 1"
+%if 0%{?gcov:1}
+%define		unit_test 1
+%define		release_test 1
+%define		testcoverage 1
+%endif
+
+# To set prefix, use this line
+### define service_db_key_prefix -Dservice-db-key-prefix='some-prefix'
+%define service_db_key_prefix %{nil}
 
 ###########################################################################
 # Package / sub-package definitions
@@ -50,16 +56,17 @@ License:	Apache-2.0
 Source0:	machine-learning-agent-%{version}.tar
 Source1001:	machine-learning-agent.manifest
 
-## Define build requirements ##
+## Define runtime requirements ##
 Requires:	libmachine-learning-agent = %{version}-%{release}
+Requires:	dbus-1
 
+## Define build requirements ##
 BuildRequires:	meson >= 0.50.0
-BuildRequires:	glib2-devel
-BuildRequires:	gstreamer-devel
+BuildRequires:	pkgconfig(glib-2.0)
+BuildRequires:	pkgconfig(gstreamer-1.0)
 BuildRequires:	pkgconfig(libsystemd)
 BuildRequires:	pkgconfig(sqlite3)
 BuildRequires:	pkgconfig(json-glib-1.0)
-BuildRequires:	dbus
 
 %if %{with tizen}
 BuildRequires:	pkgconfig(dlog)
@@ -70,6 +77,8 @@ BuildRequires:	pkgconfig(capi-appfw-app-common)
 
 # For test
 %if 0%{?unit_test}
+# g_test_dbus_up requires dbus
+BuildRequires:	dbus-1
 BuildRequires:	pkgconfig(gtest)
 
 %if 0%{?testcoverage}
@@ -93,6 +102,14 @@ Group:		Machine Learning/ML Framework
 Requires:	libmachine-learning-agent = %{version}-%{release}
 %description -n libmachine-learning-agent-devel
 Development headers and static library for interfaces provided by Machine Learning Agent.
+
+%package test
+Summary:	ML service agent for testing purposes
+Requires:	dbus
+%description test
+ML agent binary for the testing purposes
+This package provides the ML agent (daemon) to the other packages that
+require testing with the ML Agent service.
 
 %if 0%{?unit_test}
 %if 0%{?release_test}
@@ -119,19 +136,6 @@ Summary:	Unittest coverage result for Machine Learning Agent
 HTML pages of lcov results of Machine Learning Agent generated during rpm build.
 %endif
 %endif # unit_test
-###########################################################################
-# Define build options
-%define enable_tizen -Denable-tizen=false
-%define service_db_path ""
-%define service_db_key_prefix %{nil}
-
-# To set prefix, use this line
-### define service_db_key_prefix -Dservice-db-key-prefix='some-prefix'
-
-%if %{with tizen}
-%define enable_tizen -Denable-tizen=true
-%define service_db_path -Dservice-db-path=%{TZ_SYS_GLOBALUSER_DB}
-%endif # tizen
 
 %prep
 %setup -q
@@ -146,9 +150,7 @@ CXXFLAGS=`echo $CXXFLAGS | sed -e "s|-std=gnu++11||"`
 
 %if 0%{?release_test}
 %define install_test -Dinstall-test=true
-%else
-%define install_test -Dinstall-test=false
-%endif
+%endif # release_test
 
 %if 0%{?testcoverage}
 # To test coverage, disable optimizations (and should unset _FORTIFY_SOURCE to use -O0)
@@ -157,22 +159,16 @@ CFLAGS=`echo $CFLAGS | sed -e "s|-Wp,-D_FORTIFY_SOURCE=[1-9]||g"`
 CXXFLAGS=`echo $CXXFLAGS | sed -e "s|-O[1-9]|-O0|g"`
 CXXFLAGS=`echo $CXXFLAGS | sed -e "s|-Wp,-D_FORTIFY_SOURCE=[1-9]||g"`
 # also, use the meson's base option, -Db_coverage, instead of --coverage/-fprofile-arcs and -ftest-coverage
-%define enable_test_coverage -Db_coverage=true
-%else
-%define enable_test_coverage -Db_coverage=false
-%endif
-
-%else # unit_test
-%define enable_test -Denable-test=false
-%define install_test -Dinstall-test=false
-%define enable_test_coverage -Db_coverage=false
+%endif # testcoverage
 %endif # unit_test
 
 rm -rf %{builddir}
 meson setup --buildtype=plain --prefix=%{_prefix} --sysconfdir=%{_sysconfdir} --libdir=%{_libdir} \
 	--bindir=%{_bindir} --includedir=%{_includedir} \
-	%{enable_test} %{install_test} %{enable_test_coverage} \
-	%{enable_tizen} %{service_db_path} %{service_db_key_prefix} \
+	%{enable_test} %{install_test} %{?testcoverage:-Db_coverage=true} \
+	%{?with_tizen:-Denable-tizen=true} \
+	-Dservice-db-path=%{?with_tizen:%{TZ_SYS_GLOBALUSER_DB}}%{!?with_tizen:%{expand:%{?service_db_path}}%{?!service_db_path:.}} \
+	%{service_db_key_prefix} \
 	%{builddir}
 
 meson compile -C %{builddir} %{?_smp_mflags}
@@ -257,28 +253,35 @@ install -m 0755 packaging/run-unittest.sh %{buildroot}%{_bindir}/tizen-unittests
 %{_includedir}/ml-agent/ml-agent-interface.h
 %{_libdir}/pkgconfig/ml-agent.pc
 
+%files test
+%manifest machine-learning-agent.manifest
+%license LICENSE
+%attr(0755,root,root) %{test_base_dir}/machine-learning-agent-test
+%attr(0755,root,root) %{test_base_dir}/services/org.tizen.machinelearning.service.service
+%{_libdir}/libml-agent-test.*
+
 %if 0%{?unit_test}
 %if 0%{?release_test}
 %files unittests
 %manifest machine-learning-agent.manifest
-%{_bindir}/unittest-ml
+%{test_base_dir}/unittests
 %{_libdir}/libml-agent-test.a
 %{_libdir}/libml-agent-test.so*
 %if 0%{?gcov:1}
 %{_bindir}/tizen-unittests/%{name}/run-unittest.sh
-%endif
+%endif # gcov
 %endif # release_test
 
 %if 0%{?gcov:1}
 %files gcov
 %{_datadir}/gcov/obj/*
-%endif
+%endif # gcov
 
 %if 0%{?testcoverage}
 %files unittest-coverage
 %{_datadir}/ml-agent/unittest/*
-%endif
-%endif #unit_test
+%endif # testcoverage
+%endif # unit_test
 
 %changelog
 * Mon Dec 11 2023 Sangjung Woo <sangjung.woo@samsung.com>
