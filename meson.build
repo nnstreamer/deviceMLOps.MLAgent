@@ -60,6 +60,10 @@ warning_c_flags = [
   '-Wdeclaration-after-statement'
 ]
 
+if glib_dep.version() < '2.67.1'
+  warning_c_flags += '-Wno-incompatible-pointer-types'
+endif
+
 # Setup warning flags for c and cpp
 foreach extra_arg : warning_flags
   if cc.has_argument (extra_arg)
