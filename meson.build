@@ -110,13 +110,4 @@ ml_agent_conf.set('INCLUDE_INSTALL_DIR', ml_agent_install_includedir)
 
 subdir('dbus')
 subdir('daemon')
-
-# Run unittest
-if get_option('enable-test')
-  gtest_dep = dependency('gtest', required: false)
-  if gtest_dep.found()
-    subdir('tests')
-  else
-    warning('The enable-test option requires google-test.')
-  endif
-endif
+subdir('tests')

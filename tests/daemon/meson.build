@@ -1,3 +1,8 @@
+# Set dependency and test-env
+testenv = environment()
+testenv.set('MLAGENT_SOURCE_ROOT_PATH', meson.source_root())
+testenv.set('MLAGENT_BUILD_ROOT_PATH', meson.build_root())
+
 unittest_ml_agent = executable('unittest_ml_agent',
   'unittest_ml_agent.cc',
   dependencies: [gtest_dep, ml_agent_test_dep],
