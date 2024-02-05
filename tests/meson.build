@@ -1,9 +1,9 @@
 # Install path for unittest
-test_base_dir = join_paths(ml_agent_install_bindir, 'ml-agent-test')
+test_base_dir = join_paths(ml_agent_install_bindir, 'ml-test')
 unittest_install_dir = join_paths(test_base_dir, 'unittests')
 
 ml_agent_lib_objs = ml_agent_lib.extract_objects(ml_agent_lib_srcs)
-ml_agent_test_both_lib = both_libraries('ml-agent-test',
+ml_agent_test_both_lib = both_libraries('mlops-agent-test',
   dependencies: ml_agent_deps,
   include_directories: ml_agent_incs,
   install: true,
@@ -26,7 +26,7 @@ ml_agent_test_dep = declare_dependency(
 )
 
 ml_agent_main_objs = ml_agent_executable.extract_objects(ml_agent_main_file)
-executable('machine-learning-agent-test',
+executable('mlops-agent-test',
   dependencies: ml_agent_test_dep,
   install: true,
   install_dir: test_base_dir,

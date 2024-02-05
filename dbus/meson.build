@@ -32,8 +32,8 @@ gdbus_gen_header_dep = declare_dependency(
   sources: [gdbus_gen_pipeline_src, gdbus_gen_model_src, gdbus_gen_resource_src])
 
 # DBus Policy configuration
-configure_file(input: 'machine-learning-agent.conf.in',
-  output: 'machine-learning-agent.conf',
+configure_file(input: 'mlops-agent.conf.in',
+  output: 'mlops-agent.conf',
   install_dir: dbus_policy_dir,
   configuration: ml_agent_conf
 )
@@ -46,8 +46,8 @@ configure_file(input: 'org.tizen.machinelearning.service.service.in',
 )
 
 # Systemd Service file
-configure_file(input: 'machine-learning-agent.service.in',
-  output: 'machine-learning-agent.service',
+configure_file(input: 'mlops-agent.service.in',
+  output: 'mlops-agent.service',
   install_dir: systemd_service_dir,
   configuration: ml_agent_conf
 )

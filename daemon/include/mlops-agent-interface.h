@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /**
- * @file    ml-agent-interface.h
+ * @file    mlops-agent-interface.h
  * @date    5 April 2023
  * @brief   A set of exported ml-agent interfaces for managing pipelines, models, and other service.
  * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent
@@ -8,8 +8,8 @@
  * @bug     No known bugs except for NYI items
  */
 
-#ifndef __ML_AGENT_INTERFACE_H__
-#define __ML_AGENT_INTERFACE_H__
+#ifndef __MLOPS_AGENT_INTERFACE_H__
+#define __MLOPS_AGENT_INTERFACE_H__
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -190,4 +190,4 @@ gint ml_agent_resource_get (const gchar *name, gchar **res_info, GError **err);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-#endif /* __ML_AGENT_INTERFACE_H__ */
+#endif /* __MLOPS_AGENT_INTERFACE_H__ */

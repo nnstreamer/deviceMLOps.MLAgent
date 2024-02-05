@@ -4,7 +4,7 @@ testenv.set('MLAGENT_SOURCE_ROOT_PATH', meson.source_root())
 testenv.set('MLAGENT_BUILD_ROOT_PATH', meson.build_root())
 
 unittest_ml_agent = executable('unittest_ml_agent',
-  'unittest_ml_agent.cc',
+  'unittest_mlops_agent.cc',
   dependencies: [gtest_dep, ml_agent_test_dep],
   install: get_option('install-test'),
   install_dir: unittest_install_dir
