@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <glib.h>
 
-#include "include/ml-agent-interface.h"
+#include "include/mlops-agent-interface.h"
 #include "dbus-interface.h"
 #include "model-dbus.h"
 #include "pipeline-dbus.h"

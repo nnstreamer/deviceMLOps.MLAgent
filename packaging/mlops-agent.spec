@@ -13,7 +13,7 @@
 %define		builddir build
 %define		source_root %{_builddir}/%{?buildsubdir}
 %define		test_script %{source_root}/packaging/run_unittests.sh
-%define		test_base_dir %{_bindir}/ml-agent-test
+%define		test_base_dir %{_bindir}/ml-test
 
 # Note that debug packages generate an additional build and storage cost.
 # If you do not need debug packages, run '$ gbs build ... --define "_skip_debug_rpm 1"'.
@@ -43,21 +43,21 @@
 
 ###########################################################################
 # Package / sub-package definitions
-Name:		machine-learning-agent
-Summary:	AI service agent for ML(Machine Learning) API and NNStreamer
+Name:		mlops-agent
+Summary:	AI service agent for MLOps and ML(Machine Learning) API
 # Synchronize the version information for ML-Agent.
-# 1. Tizen   : ./packaging/machine-learning-agent.spec
+# 1. Tizen   : ./packaging/mlops-agent.spec
 # 2. Meson   : ./meson.build
 Version:	1.8.5
 Release:	0
 Group:		Machine Learning/ML Framework
 Packager:	Sangjung Woo <sangjung.woo@samsung.com>
 License:	Apache-2.0
-Source0:	machine-learning-agent-%{version}.tar
-Source1001:	machine-learning-agent.manifest
+Source0:	mlops-agent-%{version}.tar
+Source1001:	mlops-agent.manifest
 
 ## Define runtime requirements ##
-Requires:	libmachine-learning-agent = %{version}-%{release}
+Requires:	libmlops-agent = %{version}-%{release}
 Requires:	dbus-1
 
 ## Define build requirements ##
@@ -90,17 +90,17 @@ BuildRequires:	lcov
 %description
 AI service agent for ML(Machine Learning) API and NNStreamer.
 
-%package -n libmachine-learning-agent
+%package -n libmlops-agent
 Summary:	Library that exports interfaces provided by Machine Learning Agent
 Group:		Machine Learning/ML Framework = %{version}-%{release}
-%description -n libmachine-learning-agent
+%description -n libmlops-agent
 Shared library to export interfaces provided by the Machine Learning Agent.
 
-%package -n libmachine-learning-agent-devel
+%package -n libmlops-agent-devel
 Summary:	Development headers and static library for interfaces provided by Machine Learning Agent
 Group:		Machine Learning/ML Framework
-Requires:	libmachine-learning-agent = %{version}-%{release}
-%description -n libmachine-learning-agent-devel
+Requires:	libmlops-agent = %{version}-%{release}
+%description -n libmlops-agent-devel
 Development headers and static library for interfaces provided by Machine Learning Agent.
 
 %package test
@@ -116,7 +116,7 @@ require testing with the ML Agent service.
 %package unittests
 Summary:	Unittests for Machine Learning Agent
 Group:		Machine Learning/ML Framework
-Requires:	machine-learning-agent = %{version}-%{release}
+Requires:	mlops-agent-test = %{version}-%{release}
 %description unittests
 Unittests for Machine Learning Agent.
 %endif
@@ -194,7 +194,7 @@ meson install -C %{builddir} --destdir=%{buildroot}
 TZ='Asia/Seoul'; export TZ
 
 # Get commit info
-VCS=`cat ${RPM_SOURCE_DIR}/machine-learning-agent.spec | grep "^VCS:" | sed "s|VCS:\\W*\\(.*\\)|\\1|"`
+VCS=`cat ${RPM_SOURCE_DIR}/mlops-agent.spec | grep "^VCS:" | sed "s|VCS:\\W*\\(.*\\)|\\1|"`
 
 # Create human readable coverage report web page.
 # Create null gcda files if gcov didn't create it because there is completely no unit test for them.
@@ -234,39 +234,39 @@ install -m 0755 packaging/run-unittest.sh %{buildroot}%{_bindir}/tizen-unittests
 %postun -p /sbin/ldconfig
 
 %files
-%manifest machine-learning-agent.manifest
+%manifest mlops-agent.manifest
 %license LICENSE
-%attr(0755,root,root) %{_bindir}/machine-learning-agent
-%attr(0644,root,root) %{_unitdir}/machine-learning-agent.service
-%attr(0644,root,root) %config %{_sysconfdir}/dbus-1/system.d/machine-learning-agent.conf
+%attr(0755,root,root) %{_bindir}/mlops-agent
+%attr(0644,root,root) %{_unitdir}/mlops-agent.service
+%attr(0644,root,root) %config %{_sysconfdir}/dbus-1/system.d/mlops-agent.conf
 %attr(0644,root,root) %{_datadir}/dbus-1/system-services/org.tizen.machinelearning.service.service
 
-%files -n libmachine-learning-agent
-%manifest machine-learning-agent.manifest
+%files -n libmlops-agent
+%manifest mlops-agent.manifest
 %license LICENSE
-%{_libdir}/libml-agent.so.*
+%{_libdir}/libmlops-agent.so.*
 
-%files -n libmachine-learning-agent-devel
-%manifest machine-learning-agent.manifest
-%{_libdir}/libml-agent.so
-%{_libdir}/libml-agent.a
-%{_includedir}/ml-agent/ml-agent-interface.h
-%{_libdir}/pkgconfig/ml-agent.pc
+%files -n libmlops-agent-devel
+%manifest mlops-agent.manifest
+%{_libdir}/libmlops-agent.so
+%{_libdir}/libmlops-agent.a
+%{_includedir}/ml/mlops-agent-interface.h
+%{_libdir}/pkgconfig/mlops-agent.pc
 
 %files test
-%manifest machine-learning-agent.manifest
+%manifest mlops-agent.manifest
 %license LICENSE
-%attr(0755,root,root) %{test_base_dir}/machine-learning-agent-test
+%attr(0755,root,root) %{test_base_dir}/mlops-agent-test
 %attr(0755,root,root) %{test_base_dir}/services/org.tizen.machinelearning.service.service
-%{_libdir}/libml-agent-test.*
+%{_libdir}/libmlops-agent-test.*
 
 %if 0%{?unit_test}
 %if 0%{?release_test}
 %files unittests
-%manifest machine-learning-agent.manifest
+%manifest mlops-agent.manifest
 %{test_base_dir}/unittests
-%{_libdir}/libml-agent-test.a
-%{_libdir}/libml-agent-test.so*
+%{_libdir}/libmlops-agent-test.a
+%{_libdir}/libmlops-agent-test.so*
 %if 0%{?gcov:1}
 %{_bindir}/tizen-unittests/%{name}/run-unittest.sh
 %endif # gcov
@@ -284,5 +284,8 @@ install -m 0755 packaging/run-unittest.sh %{buildroot}%{_bindir}/tizen-unittests
 %endif # unit_test
 
 %changelog
+* Thu Feb 08 2024 Sangjung Woo <sangjung.woo@samsung.com>
+- Rename the package prefix to mlops-agent
+
 * Mon Dec 11 2023 Sangjung Woo <sangjung.woo@samsung.com>
 - Started ML-Agent packaging for 1.8.5 (Initial version sync to ML API)

@@ -11,7 +11,7 @@
 #include <gio/gio.h>
 
 #include "log.h"
-#include "ml-agent-interface.h"
+#include "mlops-agent-interface.h"
 
 /**
  * @brief Test base class for ML-Agent.
