@@ -7,4 +7,4 @@ Name: mlops-agent
 Description: Development headers and libraries for interfaces provided by MLOps Agent
 Version: @VERSION@
 Libs: -L${libdir} -lmlops-agent
-Cflags: -I${includedir}/mlops-agent
+Cflags: -I${includedir}/ml
