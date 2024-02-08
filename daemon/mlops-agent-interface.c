@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /**
- * @file    ml-agent-interface.c
+ * @file    mlops-agent-interface.c
  * @date    5 April 2023
  * @brief   A set of exported ml-agent interfaces for managing pipelines, models, and other service.
  * @see     https://github.com/nnstreamer/deviceMLOps.MLAgent

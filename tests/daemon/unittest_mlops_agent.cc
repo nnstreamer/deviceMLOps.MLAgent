@@ -1,5 +1,5 @@
 /**
- * @file        unittest_ml_agent.cc
+ * @file        unittest_mlops_agent.cc
  * @date        16 Jul 2022
  * @brief       Unit test for ML-Agent and its interface
  * @see         https://github.com/nnstreamer/deviceMLOps.MLAgent

@@ -86,9 +86,6 @@ if get_option('enable-tizen')
   add_project_arguments('-D__TIZEN__=1', language: ['c', 'cpp'])
 endif
 
-serviceDBPath = get_option('service-db-path')
-add_project_arguments('-DSYS_DB_DIR="' + serviceDBPath + '"', language: ['c', 'cpp'])
-
 # Set install path
 ml_agent_install_prefix = get_option('prefix')
 ml_agent_install_libdir = join_paths(ml_agent_install_prefix, get_option('libdir'))
