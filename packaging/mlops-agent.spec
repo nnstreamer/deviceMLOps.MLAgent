@@ -10,6 +10,8 @@
 
 ###########################################################################
 # Macros for building and testing option control
+# Note that, when changing install path for unittest,
+# you should update 'run-unittest.sh' in packaging directory.
 %define		builddir build
 %define		source_root %{_builddir}/%{?buildsubdir}
 %define		test_script %{source_root}/packaging/run_unittests.sh
@@ -265,8 +267,6 @@ install -m 0755 packaging/run-unittest.sh %{buildroot}%{_bindir}/tizen-unittests
 %files unittests
 %manifest mlops-agent.manifest
 %{test_base_dir}/unittests
-%{_libdir}/libmlops-agent-test.a
-%{_libdir}/libmlops-agent-test.so*
 %if 0%{?gcov:1}
 %{_bindir}/tizen-unittests/%{name}/run-unittest.sh
 %endif # gcov

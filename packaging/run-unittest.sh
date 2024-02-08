@@ -7,13 +7,13 @@
 ##
 setup() {
     echo "setup start"
-    export MLAPI_SOURCE_ROOT_PATH=/usr/bin/unittest-ml
-    pushd /usr/bin/unittest-ml
+    export MLAGENT_SOURCE_ROOT_PATH=/usr/bin/ml-test/unittests
+    pushd /usr/bin/ml-test/unittests
 }
 
 test_main() {
     echo "test_main start"
-	testlist=$(find /usr/bin/unittest-ml -type f -executable -name "unittest_*")
+	testlist=$(find /usr/bin/ml-test/unittests -type f -executable -name "unittest_*")
     for test in ${testlist}; do
 	  ${test}
     done
