@@ -1,0 +1,32 @@
+name: GBS Tizen build from Ubuntu
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: "x86_64"
+            option: "--define \"unit_test 1\""
+          - arch: "i586"
+            option: "--define \"unit_test 0\""
+          - arch: "armv7l"
+            option: "--define \"unit_test 0\""
+          - arch: "aarch64"
+            option: "--define \"unit_test 1\""
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: prepare deb sources for GBS
+      run: echo "deb [trusted=yes] http://download.tizen.org/tools/latest-release/Ubuntu_20.04/ /" | sudo tee /etc/apt/sources.list.d/tizen.list
+    - name: install GBS
+      run: sudo apt-get update && sudo apt-get install -y gbs
+    - name: configure GBS
+      run: cp .github/workflows/tizen.gbs.conf ~/.gbs.conf
+    - name: run GBS
+      run: gbs build --skip-srcrpm --define "_skip_debug_rpm 1" -A ${{ matrix.arch }} ${{ matrix.option }}
