@@ -1,0 +1,34 @@
+name: Native build in Ubuntu 20.04/22.04 with Clang 17
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    env:
+      BUILD_DIR: build
+    strategy:
+      matrix:
+        os: [ ubuntu-20.04, ubuntu-22.04 ]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: install clang-17 from apt.llvm.org
+      run: |
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add - &&\
+        sudo add-apt-repository "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-17 main" && \
+        sudo apt-get install -y clang-17
+    - name: install the meson and ninja build systems
+      run: python3 -m pip install meson ninja
+    - name: install build requirements
+      run: |
+        sudo apt-get install -y libunwind-dev libgstreamer1.0-dev libsystemd-dev \
+          libjson-glib-dev
+    - run: meson setup $BUILD_DIR
+      env:
+        CC: clang-17
+        CXX: clang++-17
+    - run: meson compile -C $BUILD_DIR
+    # TODO: Add compile time unit testing
