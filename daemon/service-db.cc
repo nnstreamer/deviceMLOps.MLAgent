@@ -46,13 +46,13 @@ typedef enum {
   TBL_MAX
 } mlsvc_table_e;
 
-const char *g_mlsvc_table_schema_v1[] = { [TBL_DB_INFO] = "tblMLDBInfo (name TEXT PRIMARY KEY NOT NULL, version INTEGER DEFAULT 1)",
-  [TBL_PIPELINE_DESCRIPTION] = "tblPipeline (key TEXT PRIMARY KEY NOT NULL, description TEXT, CHECK (length(description) > 0))",
-  [TBL_MODEL_INFO]
-  = "tblModel (key TEXT NOT NULL, version INTEGER DEFAULT 1, active TEXT DEFAULT 'F', "
-    "path TEXT, description TEXT, app_info TEXT, PRIMARY KEY (key, version), CHECK (length(path) > 0), CHECK (active IN ('T', 'F')))",
-  [TBL_RESOURCE_INFO] = "tblResource (key TEXT NOT NULL, path TEXT, description TEXT, app_info TEXT, PRIMARY KEY (key, path), CHECK (length(path) > 0))",
-  NULL };
+const char *g_mlsvc_table_schema_v1[] = {
+  /* TBL_DB_INFO */ "tblMLDBInfo (name TEXT PRIMARY KEY NOT NULL, version INTEGER DEFAULT 1)",
+  /* TBL_PIPELINE_DESCRIPTION */ "tblPipeline (key TEXT PRIMARY KEY NOT NULL, description TEXT, CHECK (length(description) > 0))",
+  /* TBL_MODEL_INFO */ "tblModel (key TEXT NOT NULL, version INTEGER DEFAULT 1, active TEXT DEFAULT 'F', path TEXT, description TEXT, app_info TEXT, PRIMARY KEY (key, version), CHECK (length(path) > 0), CHECK (active IN ('T', 'F')))",
+  /* TBL_RESOURCE_INFO */ "tblResource (key TEXT NOT NULL, path TEXT, description TEXT, app_info TEXT, PRIMARY KEY (key, path), CHECK (length(path) > 0))",
+  /* Sentinel */ NULL
+};
 
 const char **g_mlsvc_table_schema = g_mlsvc_table_schema_v1;
 
