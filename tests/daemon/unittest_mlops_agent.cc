@@ -62,34 +62,34 @@ TEST_F (MLAgentTest, pipeline)
   gint64 id;
   gchar *desc = NULL;
 
-  ret = ml_agent_pipeline_set_description ("test-pipeline", pipeline_desc, NULL);
+  ret = ml_agent_pipeline_set_description ("test-pipeline", pipeline_desc);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_pipeline_get_description ("test-pipeline", &desc, NULL);
+  ret = ml_agent_pipeline_get_description ("test-pipeline", &desc);
   EXPECT_EQ (ret, 0);
   EXPECT_STREQ (desc, pipeline_desc);
   g_free (desc);
 
-  ret = ml_agent_pipeline_launch ("test-pipeline", &id, NULL);
+  ret = ml_agent_pipeline_launch ("test-pipeline", &id);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_pipeline_start (id, NULL);
-  EXPECT_EQ (ret, 0);
-  g_usleep (200000);
-
-  ret = ml_agent_pipeline_stop (id, NULL);
+  ret = ml_agent_pipeline_start (id);
   EXPECT_EQ (ret, 0);
   g_usleep (200000);
 
-  ret = ml_agent_pipeline_get_state (id, &state, NULL);
+  ret = ml_agent_pipeline_stop (id);
   EXPECT_EQ (ret, 0);
   g_usleep (200000);
 
-  ret = ml_agent_pipeline_destroy (id, NULL);
+  ret = ml_agent_pipeline_get_state (id, &state);
   EXPECT_EQ (ret, 0);
   g_usleep (200000);
 
-  ret = ml_agent_pipeline_delete ("test-pipeline", NULL);
+  ret = ml_agent_pipeline_destroy (id);
+  EXPECT_EQ (ret, 0);
+  g_usleep (200000);
+
+  ret = ml_agent_pipeline_delete ("test-pipeline");
   EXPECT_EQ (ret, 0);
 }
 
@@ -100,13 +100,13 @@ TEST_F (MLAgentTest, pipeline_set_description_01_n)
 {
   gint ret;
 
-  ret = ml_agent_pipeline_set_description (NULL, "fakesrc ! fakesink", NULL);
+  ret = ml_agent_pipeline_set_description (NULL, "fakesrc ! fakesink");
   EXPECT_NE (ret, 0);
-  ret = ml_agent_pipeline_set_description ("", "fakesrc ! fakesink", NULL);
+  ret = ml_agent_pipeline_set_description ("", "fakesrc ! fakesink");
   EXPECT_NE (ret, 0);
-  ret = ml_agent_pipeline_set_description ("test-pipeline", NULL, NULL);
+  ret = ml_agent_pipeline_set_description ("test-pipeline", NULL);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_pipeline_set_description ("test-pipeline", "", NULL);
+  ret = ml_agent_pipeline_set_description ("test-pipeline", "");
   EXPECT_NE (ret, 0);
 }
 
@@ -118,15 +118,15 @@ TEST_F (MLAgentTest, pipeline_get_description_01_n)
   gint ret;
   gchar *desc = NULL;
 
-  ret = ml_agent_pipeline_get_description (NULL, &desc, NULL);
+  ret = ml_agent_pipeline_get_description (NULL, &desc);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_pipeline_get_description ("", &desc, NULL);
+  ret = ml_agent_pipeline_get_description ("", &desc);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_pipeline_get_description ("test-pipeline", NULL, NULL);
+  ret = ml_agent_pipeline_get_description ("test-pipeline", NULL);
   EXPECT_NE (ret, 0);
 
   /* no registered pipeline */
-  ret = ml_agent_pipeline_get_description ("test-pipeline", &desc, NULL);
+  ret = ml_agent_pipeline_get_description ("test-pipeline", &desc);
   EXPECT_NE (ret, 0);
 }
 
@@ -137,13 +137,13 @@ TEST_F (MLAgentTest, pipeline_delete_01_n)
 {
   gint ret;
 
-  ret = ml_agent_pipeline_delete (NULL, NULL);
+  ret = ml_agent_pipeline_delete (NULL);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_pipeline_delete ("", NULL);
+  ret = ml_agent_pipeline_delete ("");
   EXPECT_NE (ret, 0);
 
   /* no registered pipeline */
-  ret = ml_agent_pipeline_delete ("test-pipeline", NULL);
+  ret = ml_agent_pipeline_delete ("test-pipeline");
   EXPECT_NE (ret, 0);
 }
 
@@ -155,15 +155,15 @@ TEST_F (MLAgentTest, pipeline_launch_01_n)
   gint ret;
   gint64 id;
 
-  ret = ml_agent_pipeline_launch (NULL, &id, NULL);
+  ret = ml_agent_pipeline_launch (NULL, &id);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_pipeline_launch ("", &id, NULL);
+  ret = ml_agent_pipeline_launch ("", &id);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_pipeline_launch ("test-pipeline", NULL, NULL);
+  ret = ml_agent_pipeline_launch ("test-pipeline", NULL);
   EXPECT_NE (ret, 0);
 
   /* no registered pipeline */
-  ret = ml_agent_pipeline_launch ("test-pipeline", &id, NULL);
+  ret = ml_agent_pipeline_launch ("test-pipeline", &id);
   EXPECT_NE (ret, 0);
 }
 
@@ -175,7 +175,7 @@ TEST_F (MLAgentTest, pipeline_start_01_n)
   gint ret;
 
   /* invalid id */
-  ret = ml_agent_pipeline_start (-1, NULL);
+  ret = ml_agent_pipeline_start (-1);
   EXPECT_NE (ret, 0);
 }
 
@@ -187,7 +187,7 @@ TEST_F (MLAgentTest, pipeline_stop_01_n)
   gint ret;
 
   /* invalid id */
-  ret = ml_agent_pipeline_stop (-1, NULL);
+  ret = ml_agent_pipeline_stop (-1);
   EXPECT_NE (ret, 0);
 }
 
@@ -199,7 +199,7 @@ TEST_F (MLAgentTest, pipeline_destroy_01_n)
   gint ret;
 
   /* invalid id */
-  ret = ml_agent_pipeline_destroy (-1, NULL);
+  ret = ml_agent_pipeline_destroy (-1);
   EXPECT_NE (ret, 0);
 }
 
@@ -212,30 +212,30 @@ TEST_F (MLAgentTest, pipeline_get_state_01_n)
   gint state;
   gint64 id;
 
-  ret = ml_agent_pipeline_set_description ("test-pipeline", "fakesrc ! fakesink", NULL);
+  ret = ml_agent_pipeline_set_description ("test-pipeline", "fakesrc ! fakesink");
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_pipeline_launch ("test-pipeline", &id, NULL);
+  ret = ml_agent_pipeline_launch ("test-pipeline", &id);
   EXPECT_EQ (ret, 0);
   g_usleep (200000);
 
-  ret = ml_agent_pipeline_get_state (id, NULL, NULL);
+  ret = ml_agent_pipeline_get_state (id, NULL);
   EXPECT_NE (ret, 0);
 
   /* invalid id */
-  ret = ml_agent_pipeline_get_state (-1, &state, NULL);
+  ret = ml_agent_pipeline_get_state (-1, &state);
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_pipeline_destroy (id, NULL);
+  ret = ml_agent_pipeline_destroy (id);
   EXPECT_EQ (ret, 0);
   g_usleep (200000);
 
-  ret = ml_agent_pipeline_delete ("test-pipeline", NULL);
+  ret = ml_agent_pipeline_delete ("test-pipeline");
   EXPECT_EQ (ret, 0);
   g_usleep (200000);
 
   /* no registered pipeline */
-  ret = ml_agent_pipeline_get_state (id, &state, NULL);
+  ret = ml_agent_pipeline_get_state (id, &state);
   EXPECT_NE (ret, 0);
 }
 
@@ -250,16 +250,16 @@ TEST_F (MLAgentTest, model)
   gchar *str;
 
   ret = ml_agent_model_register (
-      "test-model", "/path/model1.tflite", TRUE, NULL, NULL, &ver1, NULL);
+      "test-model", "/path/model1.tflite", TRUE, NULL, NULL, &ver1);
   EXPECT_EQ (ret, 0);
   ret = ml_agent_model_register (
-      "test-model", "/path/model2.tflite", FALSE, NULL, NULL, &ver2, NULL);
+      "test-model", "/path/model2.tflite", FALSE, NULL, NULL, &ver2);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_model_update_description ("test-model", ver1, "model1desc", NULL);
+  ret = ml_agent_model_update_description ("test-model", ver1, "model1desc");
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_model_get ("test-model", ver1, &model_info, NULL);
+  ret = ml_agent_model_get ("test-model", ver1, &model_info);
   EXPECT_EQ (ret, 0);
 
   str = (model_info != NULL) ? strstr (model_info, "/path/model1.tflite") : NULL;
@@ -269,9 +269,9 @@ TEST_F (MLAgentTest, model)
   g_free (model_info);
   model_info = NULL;
 
-  ret = ml_agent_model_activate ("test-model", ver2, NULL);
+  ret = ml_agent_model_activate ("test-model", ver2);
   EXPECT_EQ (ret, 0);
-  ret = ml_agent_model_get_activated ("test-model", &model_info, NULL);
+  ret = ml_agent_model_get_activated ("test-model", &model_info);
   EXPECT_EQ (ret, 0);
 
   str = (model_info != NULL) ? strstr (model_info, "/path/model2.tflite") : NULL;
@@ -279,7 +279,7 @@ TEST_F (MLAgentTest, model)
   g_free (model_info);
   model_info = NULL;
 
-  ret = ml_agent_model_get_all ("test-model", &model_info, NULL);
+  ret = ml_agent_model_get_all ("test-model", &model_info);
   EXPECT_EQ (ret, 0);
 
   str = (model_info != NULL) ? strstr (model_info, "/path/model1.tflite") : NULL;
@@ -289,7 +289,7 @@ TEST_F (MLAgentTest, model)
   g_free (model_info);
   model_info = NULL;
 
-  ret = ml_agent_model_delete ("test-model", 0U, NULL);
+  ret = ml_agent_model_delete ("test-model", 0U);
   EXPECT_EQ (ret, 0);
 }
 
@@ -301,16 +301,15 @@ TEST_F (MLAgentTest, model_register_01_n)
   gint ret;
   guint ver;
 
-  ret = ml_agent_model_register (NULL, "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+  ret = ml_agent_model_register (NULL, "/path/model.tflite", FALSE, NULL, NULL, &ver);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_register ("", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+  ret = ml_agent_model_register ("", "/path/model.tflite", FALSE, NULL, NULL, &ver);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_register ("test-model", NULL, FALSE, NULL, NULL, &ver, NULL);
+  ret = ml_agent_model_register ("test-model", NULL, FALSE, NULL, NULL, &ver);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_register ("test-model", "", FALSE, NULL, NULL, &ver, NULL);
+  ret = ml_agent_model_register ("test-model", "", FALSE, NULL, NULL, &ver);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_register (
-      "test-model", "/path/model.tflite", FALSE, NULL, NULL, NULL, NULL);
+  ret = ml_agent_model_register ("test-model", "/path/model.tflite", FALSE, NULL, NULL, NULL);
   EXPECT_NE (ret, 0);
 }
 
@@ -323,29 +322,29 @@ TEST_F (MLAgentTest, model_update_description_01_n)
   guint ver;
 
   ret = ml_agent_model_register (
-      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_model_update_description (NULL, ver, "desc", NULL);
+  ret = ml_agent_model_update_description (NULL, ver, "desc");
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_update_description ("", ver, "desc", NULL);
+  ret = ml_agent_model_update_description ("", ver, "desc");
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_update_description ("test-model", 0U, "desc", NULL);
+  ret = ml_agent_model_update_description ("test-model", 0U, "desc");
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_update_description ("test-model", ver, NULL, NULL);
+  ret = ml_agent_model_update_description ("test-model", ver, NULL);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_update_description ("test-model", ver, "", NULL);
+  ret = ml_agent_model_update_description ("test-model", ver, "");
   EXPECT_NE (ret, 0);
 
   /* invalid version */
-  ret = ml_agent_model_update_description ("test-model", (ver + 5U), "desc", NULL);
+  ret = ml_agent_model_update_description ("test-model", (ver + 5U), "desc");
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U, NULL);
+  ret = ml_agent_model_delete ("test-model", 0U);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
-  ret = ml_agent_model_update_description ("test-model", ver, "desc", NULL);
+  ret = ml_agent_model_update_description ("test-model", ver, "desc");
   EXPECT_NE (ret, 0);
 }
 
@@ -358,25 +357,25 @@ TEST_F (MLAgentTest, model_activate_01_n)
   guint ver;
 
   ret = ml_agent_model_register (
-      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_model_activate (NULL, ver, NULL);
+  ret = ml_agent_model_activate (NULL, ver);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_activate ("", ver, NULL);
+  ret = ml_agent_model_activate ("", ver);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_activate ("test-model", 0U, NULL);
+  ret = ml_agent_model_activate ("test-model", 0U);
   EXPECT_NE (ret, 0);
 
   /* invalid version */
-  ret = ml_agent_model_activate ("test-model", (ver + 5U), NULL);
+  ret = ml_agent_model_activate ("test-model", (ver + 5U));
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U, NULL);
+  ret = ml_agent_model_delete ("test-model", 0U);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
-  ret = ml_agent_model_activate ("test-model", ver, NULL);
+  ret = ml_agent_model_activate ("test-model", ver);
   EXPECT_NE (ret, 0);
 }
 
@@ -390,27 +389,27 @@ TEST_F (MLAgentTest, model_get_01_n)
   gchar *model_info = NULL;
 
   ret = ml_agent_model_register (
-      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_model_get (NULL, ver, &model_info, NULL);
+  ret = ml_agent_model_get (NULL, ver, &model_info);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_get ("", ver, &model_info, NULL);
+  ret = ml_agent_model_get ("", ver, &model_info);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_get ("test-model", 0U, &model_info, NULL);
+  ret = ml_agent_model_get ("test-model", 0U, &model_info);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_get ("test-model", ver, NULL, NULL);
+  ret = ml_agent_model_get ("test-model", ver, NULL);
   EXPECT_NE (ret, 0);
 
   /* invalid version */
-  ret = ml_agent_model_get ("test-model", (ver + 5U), &model_info, NULL);
+  ret = ml_agent_model_get ("test-model", (ver + 5U), &model_info);
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U, NULL);
+  ret = ml_agent_model_delete ("test-model", 0U);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
-  ret = ml_agent_model_get ("test-model", ver, &model_info, NULL);
+  ret = ml_agent_model_get ("test-model", ver, &model_info);
   EXPECT_NE (ret, 0);
 }
 
@@ -424,25 +423,25 @@ TEST_F (MLAgentTest, model_get_activated_01_n)
   gchar *model_info = NULL;
 
   ret = ml_agent_model_register (
-      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_model_get_activated (NULL, &model_info, NULL);
+  ret = ml_agent_model_get_activated (NULL, &model_info);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_get_activated ("", &model_info, NULL);
+  ret = ml_agent_model_get_activated ("", &model_info);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_get_activated ("test-model", NULL, NULL);
+  ret = ml_agent_model_get_activated ("test-model", NULL);
   EXPECT_NE (ret, 0);
 
   /* no activated model */
-  ret = ml_agent_model_get_activated ("test-model", &model_info, NULL);
+  ret = ml_agent_model_get_activated ("test-model", &model_info);
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U, NULL);
+  ret = ml_agent_model_delete ("test-model", 0U);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
-  ret = ml_agent_model_get_activated ("test-model", &model_info, NULL);
+  ret = ml_agent_model_get_activated ("test-model", &model_info);
   EXPECT_NE (ret, 0);
 }
 
@@ -454,15 +453,15 @@ TEST_F (MLAgentTest, model_get_all_01_n)
   gint ret;
   gchar *model_info = NULL;
 
-  ret = ml_agent_model_get_all (NULL, &model_info, NULL);
+  ret = ml_agent_model_get_all (NULL, &model_info);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_get_all ("", &model_info, NULL);
+  ret = ml_agent_model_get_all ("", &model_info);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_get_all ("test-model", NULL, NULL);
+  ret = ml_agent_model_get_all ("test-model", NULL);
   EXPECT_NE (ret, 0);
 
   /* no registered model */
-  ret = ml_agent_model_get_all ("test-model", &model_info, NULL);
+  ret = ml_agent_model_get_all ("test-model", &model_info);
   EXPECT_NE (ret, 0);
 }
 
@@ -475,23 +474,23 @@ TEST_F (MLAgentTest, model_delete_01_n)
   guint ver;
 
   ret = ml_agent_model_register (
-      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver, NULL);
+      "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_model_delete (NULL, ver, NULL);
+  ret = ml_agent_model_delete (NULL, ver);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_delete ("", ver, NULL);
+  ret = ml_agent_model_delete ("", ver);
   EXPECT_NE (ret, 0);
 
   /* invalid version */
-  ret = ml_agent_model_delete ("test-model", (ver + 5U), NULL);
+  ret = ml_agent_model_delete ("test-model", (ver + 5U));
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U, NULL);
+  ret = ml_agent_model_delete ("test-model", 0U);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
-  ret = ml_agent_model_delete ("test-model", 0U, NULL);
+  ret = ml_agent_model_delete ("test-model", 0U);
   EXPECT_NE (ret, 0);
 }
 
@@ -504,10 +503,10 @@ TEST_F (MLAgentTest, resource)
   gchar *res_info = NULL;
   gchar *str;
 
-  ret = ml_agent_resource_add ("test-res", "/path/res1.dat", NULL, NULL, NULL);
+  ret = ml_agent_resource_add ("test-res", "/path/res1.dat", NULL, NULL);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_resource_get ("test-res", &res_info, NULL);
+  ret = ml_agent_resource_get ("test-res", &res_info);
   EXPECT_EQ (ret, 0);
 
   str = (res_info != NULL) ? strstr (res_info, "/path/res1.dat") : NULL;
@@ -517,10 +516,10 @@ TEST_F (MLAgentTest, resource)
   g_free (res_info);
   res_info = NULL;
 
-  ret = ml_agent_resource_add ("test-res", "/path/res2.dat", "res2desc", NULL, NULL);
+  ret = ml_agent_resource_add ("test-res", "/path/res2.dat", "res2desc", NULL);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_resource_get ("test-res", &res_info, NULL);
+  ret = ml_agent_resource_get ("test-res", &res_info);
   EXPECT_EQ (ret, 0);
 
   str = (res_info != NULL) ? strstr (res_info, "/path/res1.dat") : NULL;
@@ -532,7 +531,7 @@ TEST_F (MLAgentTest, resource)
   g_free (res_info);
   res_info = NULL;
 
-  ret = ml_agent_resource_delete ("test-res", NULL);
+  ret = ml_agent_resource_delete ("test-res");
   EXPECT_EQ (ret, 0);
 }
 
@@ -543,13 +542,13 @@ TEST_F (MLAgentTest, resource_add_01_n)
 {
   gint ret;
 
-  ret = ml_agent_resource_add (NULL, "/path/res.dat", NULL, NULL, NULL);
+  ret = ml_agent_resource_add (NULL, "/path/res.dat", NULL, NULL);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_resource_add ("", "/path/res.dat", NULL, NULL, NULL);
+  ret = ml_agent_resource_add ("", "/path/res.dat", NULL, NULL);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_resource_add ("test-res", NULL, NULL, NULL, NULL);
+  ret = ml_agent_resource_add ("test-res", NULL, NULL, NULL);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_resource_add ("test-res", "", NULL, NULL, NULL);
+  ret = ml_agent_resource_add ("test-res", "", NULL, NULL);
   EXPECT_NE (ret, 0);
 }
 
@@ -560,13 +559,13 @@ TEST_F (MLAgentTest, resource_delete_01_n)
 {
   gint ret;
 
-  ret = ml_agent_resource_delete (NULL, NULL);
+  ret = ml_agent_resource_delete (NULL);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_resource_delete ("", NULL);
+  ret = ml_agent_resource_delete ("");
   EXPECT_NE (ret, 0);
 
   /* no registered resource */
-  ret = ml_agent_resource_delete ("test-res", NULL);
+  ret = ml_agent_resource_delete ("test-res");
   EXPECT_NE (ret, 0);
 }
 
@@ -578,15 +577,15 @@ TEST_F (MLAgentTest, resource_get_01_n)
   gint ret;
   gchar *res_info = NULL;
 
-  ret = ml_agent_resource_get (NULL, &res_info, NULL);
+  ret = ml_agent_resource_get (NULL, &res_info);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_resource_get ("", &res_info, NULL);
+  ret = ml_agent_resource_get ("", &res_info);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_resource_get ("test-res", NULL, NULL);
+  ret = ml_agent_resource_get ("test-res", NULL);
   EXPECT_NE (ret, 0);
 
   /* no registered resource */
-  ret = ml_agent_resource_get ("test-res", &res_info, NULL);
+  ret = ml_agent_resource_get ("test-res", &res_info);
   EXPECT_NE (ret, 0);
 }
 

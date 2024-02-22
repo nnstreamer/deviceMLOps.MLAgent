@@ -10,6 +10,7 @@
 
 #include <errno.h>
 #include <glib.h>
+#include <stdint.h>
 
 #include "include/mlops-agent-interface.h"
 #include "dbus-interface.h"
@@ -33,13 +34,12 @@ typedef gpointer ml_agent_proxy_h;
  * @brief An internal helper to get the dbus proxy
  */
 static ml_agent_proxy_h
-_get_proxy_new_for_bus_sync (ml_agent_service_type_e type, GError ** err)
+_get_proxy_new_for_bus_sync (ml_agent_service_type_e type)
 {
   static const GBusType bus_types[] = { G_BUS_TYPE_SYSTEM, G_BUS_TYPE_SESSION };
   static const size_t num_bus_types =
       sizeof (bus_types) / sizeof (bus_types[0]);
   ml_agent_proxy_h *proxy = NULL;
-  GError *_err = NULL;
   size_t i;
 
   switch (type) {
@@ -48,11 +48,9 @@ _get_proxy_new_for_bus_sync (ml_agent_service_type_e type, GError ** err)
       MachinelearningServicePipeline *mlsp;
 
       for (i = 0; i < num_bus_types; ++i) {
-        g_clear_error (&_err);
-
         mlsp = machinelearning_service_pipeline_proxy_new_for_bus_sync
             (bus_types[i], G_DBUS_PROXY_FLAGS_NONE, DBUS_ML_BUS_NAME,
-            DBUS_PIPELINE_PATH, NULL, &_err);
+            DBUS_PIPELINE_PATH, NULL, NULL);
         if (mlsp) {
           break;
         }
@@ -65,11 +63,9 @@ _get_proxy_new_for_bus_sync (ml_agent_service_type_e type, GError ** err)
       MachinelearningServiceModel *mlsm;
 
       for (i = 0; i < num_bus_types; ++i) {
-        g_clear_error (&_err);
-
         mlsm = machinelearning_service_model_proxy_new_for_bus_sync
             (bus_types[i], G_DBUS_PROXY_FLAGS_NONE, DBUS_ML_BUS_NAME,
-            DBUS_MODEL_PATH, NULL, &_err);
+            DBUS_MODEL_PATH, NULL, NULL);
         if (mlsm)
           break;
       }
@@ -81,11 +77,9 @@ _get_proxy_new_for_bus_sync (ml_agent_service_type_e type, GError ** err)
       MachinelearningServiceResource *mlsr;
 
       for (i = 0; i < num_bus_types; ++i) {
-        g_clear_error (&_err);
-
         mlsr = machinelearning_service_resource_proxy_new_for_bus_sync
             (bus_types[i], G_DBUS_PROXY_FLAGS_NONE, DBUS_ML_BUS_NAME,
-            DBUS_RESOURCE_PATH, NULL, &_err);
+            DBUS_RESOURCE_PATH, NULL, NULL);
         if (mlsr)
           break;
       }
@@ -96,20 +90,14 @@ _get_proxy_new_for_bus_sync (ml_agent_service_type_e type, GError ** err)
       break;
   }
 
-  if (_err) {
-    *err = g_error_copy (_err);
-    g_clear_error (&_err);
-  }
-
   return proxy;
 }
 
 /**
  * @brief An interface exported for setting the description of a pipeline.
  */
-gint
-ml_agent_pipeline_set_description (const gchar * name,
-    const gchar * pipeline_desc, GError ** err)
+int
+ml_agent_pipeline_set_description (const char *name, const char *pipeline_desc)
 {
   MachinelearningServicePipeline *mlsp;
   gboolean result;
@@ -118,13 +106,13 @@ ml_agent_pipeline_set_description (const gchar * name,
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE, err);
+  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE);
   if (!mlsp) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_pipeline_call_set_pipeline_sync (mlsp,
-      name, pipeline_desc, NULL, NULL, err);
+      name, pipeline_desc, NULL, NULL, NULL);
   g_object_unref (mlsp);
 
   g_return_val_if_fail (result, -EIO);
@@ -134,9 +122,8 @@ ml_agent_pipeline_set_description (const gchar * name,
 /**
  * @brief An interface exported for getting the pipeline's description corresponding to the given @a name.
  */
-gint
-ml_agent_pipeline_get_description (const gchar * name,
-    gchar ** pipeline_desc, GError ** err)
+int
+ml_agent_pipeline_get_description (const char *name, char **pipeline_desc)
 {
   MachinelearningServicePipeline *mlsp;
   gboolean result;
@@ -146,13 +133,13 @@ ml_agent_pipeline_get_description (const gchar * name,
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE, err);
+  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE);
   if (!mlsp) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_pipeline_call_get_pipeline_sync (mlsp,
-      name, &ret, pipeline_desc, NULL, err);
+      name, &ret, pipeline_desc, NULL, NULL);
   g_object_unref (mlsp);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -162,8 +149,8 @@ ml_agent_pipeline_get_description (const gchar * name,
 /**
  * @brief An interface exported for deletion of the pipeline's description corresponding to the given @a name.
  */
-gint
-ml_agent_pipeline_delete (const gchar * name, GError ** err)
+int
+ml_agent_pipeline_delete (const char *name)
 {
   MachinelearningServicePipeline *mlsp;
   gboolean result;
@@ -173,13 +160,13 @@ ml_agent_pipeline_delete (const gchar * name, GError ** err)
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE, err);
+  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE);
   if (!mlsp) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_pipeline_call_delete_pipeline_sync (mlsp,
-      name, &ret, NULL, err);
+      name, &ret, NULL, NULL);
   g_object_unref (mlsp);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -189,8 +176,8 @@ ml_agent_pipeline_delete (const gchar * name, GError ** err)
 /**
  * @brief An interface exported for launching the pipeline's description corresponding to the given @a name.
  */
-gint
-ml_agent_pipeline_launch (const gchar * name, gint64 * id, GError ** err)
+int
+ml_agent_pipeline_launch (const char *name, int64_t * id)
 {
   MachinelearningServicePipeline *mlsp;
   gboolean result;
@@ -200,13 +187,13 @@ ml_agent_pipeline_launch (const gchar * name, gint64 * id, GError ** err)
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE, err);
+  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE);
   if (!mlsp) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_pipeline_call_launch_pipeline_sync (mlsp,
-      name, &ret, id, NULL, err);
+      name, &ret, id, NULL, NULL);
   g_object_unref (mlsp);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -216,20 +203,20 @@ ml_agent_pipeline_launch (const gchar * name, gint64 * id, GError ** err)
 /**
  * @brief An interface exported for changing the pipeline's state of the given @a id to start.
  */
-gint
-ml_agent_pipeline_start (const gint64 id, GError ** err)
+int
+ml_agent_pipeline_start (const int64_t id)
 {
   MachinelearningServicePipeline *mlsp;
   gboolean result;
   gint ret;
 
-  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE, err);
+  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE);
   if (!mlsp) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_pipeline_call_start_pipeline_sync (mlsp,
-      id, &ret, NULL, err);
+      id, &ret, NULL, NULL);
   g_object_unref (mlsp);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -239,20 +226,20 @@ ml_agent_pipeline_start (const gint64 id, GError ** err)
 /**
  * @brief An interface exported for changing the pipeline's state of the given @a id to stop.
  */
-gint
-ml_agent_pipeline_stop (const gint64 id, GError ** err)
+int
+ml_agent_pipeline_stop (const int64_t id)
 {
   MachinelearningServicePipeline *mlsp;
   gboolean result;
   gint ret;
 
-  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE, err);
+  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE);
   if (!mlsp) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_pipeline_call_stop_pipeline_sync (mlsp,
-      id, &ret, NULL, err);
+      id, &ret, NULL, NULL);
   g_object_unref (mlsp);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -262,20 +249,20 @@ ml_agent_pipeline_stop (const gint64 id, GError ** err)
 /**
  * @brief An interface exported for destroying a launched pipeline corresponding to the given @a id.
  */
-gint
-ml_agent_pipeline_destroy (const gint64 id, GError ** err)
+int
+ml_agent_pipeline_destroy (const int64_t id)
 {
   MachinelearningServicePipeline *mlsp;
   gboolean result;
   gint ret;
 
-  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE, err);
+  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE);
   if (!mlsp) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_pipeline_call_destroy_pipeline_sync (mlsp,
-      id, &ret, NULL, err);
+      id, &ret, NULL, NULL);
   g_object_unref (mlsp);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -285,8 +272,8 @@ ml_agent_pipeline_destroy (const gint64 id, GError ** err)
 /**
  * @brief An interface exported for getting the pipeline's state of the given @a id.
  */
-gint
-ml_agent_pipeline_get_state (const gint64 id, gint * state, GError ** err)
+int
+ml_agent_pipeline_get_state (const int64_t id, int *state)
 {
   MachinelearningServicePipeline *mlsp;
   gboolean result;
@@ -296,13 +283,13 @@ ml_agent_pipeline_get_state (const gint64 id, gint * state, GError ** err)
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE, err);
+  mlsp = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_PIPELINE);
   if (!mlsp) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_pipeline_call_get_state_sync (mlsp,
-      id, &ret, state, NULL, err);
+      id, &ret, state, NULL, NULL);
   g_object_unref (mlsp);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -312,10 +299,10 @@ ml_agent_pipeline_get_state (const gint64 id, gint * state, GError ** err)
 /**
  * @brief An interface exported for registering a model.
  */
-gint
-ml_agent_model_register (const gchar * name, const gchar * path,
-    const gboolean activate, const gchar * description, const gchar * app_info,
-    guint * version, GError ** err)
+int
+ml_agent_model_register (const char *name, const char *path,
+    const int activate, const char *description, const char *app_info,
+    uint32_t * version)
 {
   MachinelearningServiceModel *mlsm;
   gboolean result;
@@ -325,14 +312,14 @@ ml_agent_model_register (const gchar * name, const gchar * path,
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL, err);
+  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL);
   if (!mlsm) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_model_call_register_sync (mlsm, name, path,
       activate, description ? description : "", app_info ? app_info : "",
-      version, &ret, NULL, err);
+      version, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -342,9 +329,9 @@ ml_agent_model_register (const gchar * name, const gchar * path,
 /**
  * @brief An interface exported for updating the description of the model with @a name and @a version.
  */
-gint
-ml_agent_model_update_description (const gchar * name,
-    const guint version, const gchar * description, GError ** err)
+int
+ml_agent_model_update_description (const char *name,
+    const uint32_t version, const char *description)
 {
   MachinelearningServiceModel *mlsm;
   gboolean result;
@@ -354,13 +341,13 @@ ml_agent_model_update_description (const gchar * name,
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL, err);
+  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL);
   if (!mlsm) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_model_call_update_description_sync (mlsm,
-      name, version, description, &ret, NULL, err);
+      name, version, description, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -370,8 +357,8 @@ ml_agent_model_update_description (const gchar * name,
 /**
  * @brief An interface exported for activating the model with @a name and @a version.
  */
-gint
-ml_agent_model_activate (const gchar * name, const guint version, GError ** err)
+int
+ml_agent_model_activate (const char *name, const uint32_t version)
 {
   MachinelearningServiceModel *mlsm;
   gboolean result;
@@ -381,13 +368,13 @@ ml_agent_model_activate (const gchar * name, const guint version, GError ** err)
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL, err);
+  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL);
   if (!mlsm) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_model_call_activate_sync (mlsm,
-      name, version, &ret, NULL, err);
+      name, version, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -397,9 +384,8 @@ ml_agent_model_activate (const gchar * name, const guint version, GError ** err)
 /**
  * @brief An interface exported for getting the information of the model with @a name and @a version.
  */
-gint
-ml_agent_model_get (const gchar * name, const guint version,
-    gchar ** model_info, GError ** err)
+int
+ml_agent_model_get (const char *name, const uint32_t version, char **model_info)
 {
   MachinelearningServiceModel *mlsm;
   gboolean result;
@@ -409,13 +395,13 @@ ml_agent_model_get (const gchar * name, const guint version,
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL, err);
+  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL);
   if (!mlsm) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_model_call_get_sync (mlsm,
-      name, version, model_info, &ret, NULL, err);
+      name, version, model_info, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -425,9 +411,8 @@ ml_agent_model_get (const gchar * name, const guint version,
 /**
  * @brief An interface exported for getting the information of the activated model with @a name.
  */
-gint
-ml_agent_model_get_activated (const gchar * name,
-    gchar ** model_info, GError ** err)
+int
+ml_agent_model_get_activated (const char *name, char **model_info)
 {
   MachinelearningServiceModel *mlsm;
   gboolean result;
@@ -437,13 +422,13 @@ ml_agent_model_get_activated (const gchar * name,
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL, err);
+  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL);
   if (!mlsm) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_model_call_get_activated_sync (mlsm,
-      name, model_info, &ret, NULL, err);
+      name, model_info, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -453,8 +438,8 @@ ml_agent_model_get_activated (const gchar * name,
 /**
  * @brief An interface exported for getting the information of all the models corresponding to the given @a name.
  */
-gint
-ml_agent_model_get_all (const gchar * name, gchar ** model_info, GError ** err)
+int
+ml_agent_model_get_all (const char *name, char **model_info)
 {
   MachinelearningServiceModel *mlsm;
   gboolean result;
@@ -464,13 +449,13 @@ ml_agent_model_get_all (const gchar * name, gchar ** model_info, GError ** err)
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL, err);
+  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL);
   if (!mlsm) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_model_call_get_all_sync (mlsm,
-      name, model_info, &ret, NULL, err);
+      name, model_info, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -480,8 +465,8 @@ ml_agent_model_get_all (const gchar * name, gchar ** model_info, GError ** err)
 /**
  * @brief An interface exported for removing the model of @a name and @a version.
  */
-gint
-ml_agent_model_delete (const gchar * name, const guint version, GError ** err)
+int
+ml_agent_model_delete (const char *name, const uint32_t version)
 {
   MachinelearningServiceModel *mlsm;
   gboolean result;
@@ -491,13 +476,13 @@ ml_agent_model_delete (const gchar * name, const guint version, GError ** err)
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL, err);
+  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL);
   if (!mlsm) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_model_call_delete_sync (mlsm,
-      name, version, &ret, NULL, err);
+      name, version, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -507,9 +492,9 @@ ml_agent_model_delete (const gchar * name, const guint version, GError ** err)
 /**
  * @brief An interface exported for adding the resource.
  */
-gint
-ml_agent_resource_add (const gchar * name, const gchar * path,
-    const gchar * description, const gchar * app_info, GError ** err)
+int
+ml_agent_resource_add (const char *name, const char *path,
+    const char *description, const char *app_info)
 {
   MachinelearningServiceResource *mlsr;
   gboolean result;
@@ -519,14 +504,14 @@ ml_agent_resource_add (const gchar * name, const gchar * path,
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsr = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_RESOURCE, err);
+  mlsr = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_RESOURCE);
   if (!mlsr) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_resource_call_add_sync (mlsr, name, path,
       description ? description : "", app_info ? app_info : "",
-      &ret, NULL, err);
+      &ret, NULL, NULL);
   g_object_unref (mlsr);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -536,8 +521,8 @@ ml_agent_resource_add (const gchar * name, const gchar * path,
 /**
  * @brief An interface exported for removing the resource with @a name.
  */
-gint
-ml_agent_resource_delete (const gchar * name, GError ** err)
+int
+ml_agent_resource_delete (const char *name)
 {
   MachinelearningServiceResource *mlsr;
   gboolean result;
@@ -547,13 +532,13 @@ ml_agent_resource_delete (const gchar * name, GError ** err)
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsr = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_RESOURCE, err);
+  mlsr = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_RESOURCE);
   if (!mlsr) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_resource_call_delete_sync (mlsr,
-      name, &ret, NULL, err);
+      name, &ret, NULL, NULL);
   g_object_unref (mlsr);
 
   g_return_val_if_fail (ret == 0 && result, ret);
@@ -563,8 +548,8 @@ ml_agent_resource_delete (const gchar * name, GError ** err)
 /**
  * @brief An interface exported for getting the description of the resource with @a name.
  */
-gint
-ml_agent_resource_get (const gchar * name, gchar ** res_info, GError ** err)
+int
+ml_agent_resource_get (const char *name, char **res_info)
 {
   MachinelearningServiceResource *mlsr;
   gboolean result;
@@ -574,13 +559,13 @@ ml_agent_resource_get (const gchar * name, gchar ** res_info, GError ** err)
     g_return_val_if_reached (-EINVAL);
   }
 
-  mlsr = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_RESOURCE, err);
+  mlsr = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_RESOURCE);
   if (!mlsr) {
     g_return_val_if_reached (-EIO);
   }
 
   result = machinelearning_service_resource_call_get_sync (mlsr,
-      name, res_info, &ret, NULL, err);
+      name, res_info, &ret, NULL, NULL);
   g_object_unref (mlsr);
 
   g_return_val_if_fail (ret == 0 && result, ret);
