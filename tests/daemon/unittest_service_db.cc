@@ -675,6 +675,24 @@ TEST (serviceDBNotInitalized, delete_resource_n)
   }
 }
 
+extern
+const char *g_mlsvc_table_schema_v1; /* from service-db.cc */
+/**
+ * @brief Test g_mlsvc_table_schema_v1 index correctness
+ */
+TEST (serviceDBtablelist, declaration_index_check_p)
+{
+  EXPECT_THAT (g_mlsvc_table_schema_v1[TBL_DB_INFO],
+      testing::StartsWith("tblMLDBInfo"));
+  EXPECT_THAT (g_mlsvc_table_schema_v1[TBL_PIPELINE_DESCRIPTION],
+      testing::StartsWith("tblPipeline"));
+  EXPECT_THAT (g_mlsvc_table_schema_v1[TBL_MODEL_INFO],
+      testing::StartsWith("tblModel"));
+  EXPECT_THAT (g_mlsvc_table_schema_v1[TBL_RESOURCE_INFO],
+      testing::StartsWith("tblResource"));
+  EXPECT_EQ (g_mlsvc_table_schema_v1[TBL_MAX], nullptr);
+}
+
 /**
  * @brief Negative test for service-db util. Invalid param case.
  */
