@@ -73,7 +73,6 @@ BuildRequires:	pkgconfig(json-glib-1.0)
 %if %{with tizen}
 BuildRequires:	pkgconfig(dlog)
 BuildRequires:	pkgconfig(libtzplatform-config)
-BuildRequires:	pkgconfig(capi-appfw-package-manager)
 BuildRequires:	pkgconfig(capi-appfw-app-common)
 %endif # tizen
 
