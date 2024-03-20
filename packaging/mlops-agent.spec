@@ -74,6 +74,7 @@ BuildRequires:	pkgconfig(json-glib-1.0)
 BuildRequires:	pkgconfig(dlog)
 BuildRequires:	pkgconfig(libtzplatform-config)
 BuildRequires:	pkgconfig(capi-appfw-app-common)
+BuildRequires:	pkgconfig(pkgmgr-info)
 %endif # tizen
 
 # For test
@@ -241,6 +242,8 @@ install -m 0755 packaging/run-unittest.sh %{buildroot}%{_bindir}/tizen-unittests
 %attr(0644,root,root) %{_unitdir}/mlops-agent.service
 %attr(0644,root,root) %config %{_sysconfdir}/dbus-1/system.d/mlops-agent.conf
 %attr(0644,root,root) %{_datadir}/dbus-1/system-services/org.tizen.machinelearning.service.service
+%{_sysconfdir}/package-manager/parserlib/metadata/libmlops-plugin-parser.so
+%{_datadir}/parser-plugins/mlops-plugin-parser.info
 
 %files -n libmlops-agent
 %manifest mlops-agent.manifest

@@ -97,6 +97,9 @@ dbus_policy_dir = join_paths(get_option('sysconfdir'), 'dbus-1', 'system.d')
 dbus_system_service_dir = join_paths(ml_agent_install_prefix, 'share', 'dbus-1', 'system-services')
 systemd_service_dir = join_paths(ml_agent_install_prefix, 'lib', 'systemd', 'system')
 
+plugin_parser_install_dir = join_paths(get_option('sysconfdir'), 'package-manager', 'parserlib', 'metadata')
+plugin_parser_info_txt_install_dir = join_paths(ml_agent_install_prefix, 'share', 'parser-plugins')
+
 # Set default configuration
 ml_agent_conf = configuration_data()
 ml_agent_conf.set('VERSION', ml_agent_version)
@@ -107,4 +110,5 @@ ml_agent_conf.set('INCLUDE_INSTALL_DIR', ml_agent_install_includedir)
 
 subdir('dbus')
 subdir('daemon')
+subdir('plugin-parser')
 subdir('tests')
