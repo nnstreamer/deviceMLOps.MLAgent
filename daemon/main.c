@@ -21,7 +21,6 @@
 #include "gdbus-util.h"
 #include "log.h"
 #include "dbus-interface.h"
-#include "pkg-mgr.h"
 #include "service-db-util.h"
 
 static GMainLoop *g_mainloop = NULL;
@@ -122,20 +121,12 @@ main (int argc, char **argv)
   if (postinit () < 0)
     ml_loge ("cannot init system");
 
-  /* Register package manager callback */
-  if (pkg_mgr_init () < 0) {
-    ml_loge ("cannot init package manager");
-  }
-
   g_main_loop_run (g_mainloop);
   exit_modules (NULL);
 
   gdbus_put_system_connection ();
   g_main_loop_unref (g_mainloop);
   g_mainloop = NULL;
-
-  if (pkg_mgr_deinit () < 0)
-    ml_logw ("cannot finalize package manager");
 
 error:
   svcdb_finalize ();

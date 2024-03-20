@@ -3,10 +3,6 @@ ml_agent_incs = include_directories('.', 'include')
 ml_agent_lib_srcs = files('modules.c', 'gdbus-util.c', 'mlops-agent-interface.c',
   'pipeline-dbus-impl.cc', 'model-dbus-impl.cc', 'resource-dbus-impl.cc', 'service-db.cc')
 
-if (get_option('enable-tizen'))
-  ml_agent_lib_srcs += files('pkg-mgr.cc')
-endif
-
 ml_agent_deps = [
   gdbus_gen_header_dep,
   glib_dep,
@@ -20,7 +16,6 @@ ml_agent_deps = [
 if (get_option('enable-tizen'))
   ml_agent_deps += [
     dependency('capi-appfw-app-common'),
-    dependency('capi-appfw-package-manager'),
     dependency('dlog')
   ]
 endif
