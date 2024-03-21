@@ -91,50 +91,17 @@ typedef enum {
  * @brief Parse json and update ml-service database via invoking daemon.
  */
 static void
-_parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *app_info)
+_parse_json (JsonNode *node, mlsvc_json_type_e json_type, const gchar *app_info)
 {
-  g_autofree gchar *json_file = NULL;
-  gint ret;
-
-  switch (json_type) {
-    case MLSVC_JSON_MODEL:
-      json_file = g_build_filename (json_path, "model_description.json", NULL);
-      break;
-    case MLSVC_JSON_PIPELINE:
-      json_file = g_build_filename (json_path, "pipeline_description.json", NULL);
-      break;
-    case MLSVC_JSON_RESOURCE:
-      json_file = g_build_filename (json_path, "resource_description.json", NULL);
-      break;
-    default:
-      _E ("Unknown data type '%d', internal error?", json_type);
-      return;
-  }
-
-  if (!g_file_test (json_file, (GFileTest) (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))) {
-    _W ("Failed to find json file '%s'. RPK using ML Service API should provide this json file.",
-        json_file);
-    return;
-  }
-
-  g_autoptr (JsonParser) parser = json_parser_new ();
-  g_autoptr (GError) err = NULL;
-
-  json_parser_load_from_file (parser, json_file, &err);
-  if (err) {
-    _E ("Failed to parse json file '%s': %s", json_file, err->message);
-    return;
-  }
-
-  JsonNode *root = json_parser_get_root (parser);
   JsonArray *array = NULL;
   JsonObject *object = NULL;
   guint json_len = 1U;
+  gint ret;
 
-  if (JSON_NODE_HOLDS_ARRAY (root)) {
-    array = json_node_get_array (root);
+  if (JSON_NODE_HOLDS_ARRAY (node)) {
+    array = json_node_get_array (node);
     if (!array) {
-      _E ("Failed to get root array from json file '%s'", json_file);
+      _E ("Failed to get array from json");
       return;
     }
 
@@ -146,7 +113,7 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
     if (array)
       object = json_array_get_object_element (array, i);
     else
-      object = json_node_get_object (root);
+      object = json_node_get_object (node);
 
     switch (json_type) {
       case MLSVC_JSON_MODEL:
@@ -155,22 +122,14 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
           const gchar *model = json_object_get_string_member (object, "model");
           const gchar *desc = json_object_get_string_member (object, "description");
           const gchar *activate = json_object_get_string_member (object, "activate");
-          const gchar *clear = json_object_get_string_member (object, "clear");
 
           if (!name || !model) {
-            _E ("Failed to get name or model from json file '%s'.", json_file);
+            _E ("Failed to get name or model from MLSVC_JSON_MODEL.");
             continue;
           }
 
           guint version;
           bool active = (activate && g_ascii_strcasecmp (activate, "true") == 0);
-          bool clear_old = (clear && g_ascii_strcasecmp (clear, "true") == 0);
-
-          /* Remove old model from database. */
-          if (clear_old) {
-            /* Ignore error case. */
-            ml_agent_model_delete (name, 0U);
-          }
 
           ret = ml_agent_model_register (name, model, active, desc ? desc : "",
               app_info ? app_info : "", &version);
@@ -184,14 +143,14 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
       case MLSVC_JSON_PIPELINE:
         {
           const gchar *name = json_object_get_string_member (object, "name");
-          const gchar *desc = json_object_get_string_member (object, "description");
+          const gchar *pipe = json_object_get_string_member (object, "pipeline");
 
-          if (!name || !desc) {
-            _E ("Failed to get name or description from json file '%s'.", json_file);
+          if (!name || !pipe) {
+            _E ("Failed to get name or pipeline from MLSVC_JSON_PIPELINE.");
             continue;
           }
 
-          ret = ml_agent_pipeline_set_description (name, desc);
+          ret = ml_agent_pipeline_set_description (name, pipe);
 
           if (ret == 0)
             _I ("The pipeline description with name '%s' is registered.", name);
@@ -202,30 +161,49 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
       case MLSVC_JSON_RESOURCE:
         {
           const gchar *name = json_object_get_string_member (object, "name");
-          const gchar *path = json_object_get_string_member (object, "path");
           const gchar *desc = json_object_get_string_member (object, "description");
-          const gchar *clear = json_object_get_string_member (object, "clear");
+          JsonNode *path_node = json_object_get_member (object, "path");
+          JsonArray *path_array = NULL;
+          guint path_len;
 
-          if (!name || !path) {
-            _E ("Failed to get name or path from json file '%s'.", json_file);
+          if (!name) {
+            _E ("Failed to get name from MLSVC_JSON_RESOURCE.");
             continue;
           }
 
-          bool clear_old = (clear && g_ascii_strcasecmp (clear, "true") == 0);
-
-          /* Remove old resource from database. */
-          if (clear_old) {
-            /* Ignore error case. */
-            ml_agent_resource_delete (name);
+          path_len = 1U;
+          if (JSON_NODE_HOLDS_ARRAY (path_node)) {
+            path_array = json_node_get_array (path_node);
+            path_len = (path_array) ? json_array_get_length (path_array) : 0U;
           }
 
-          ret = ml_agent_resource_add (
-              name, path, desc ? desc : "", app_info ? app_info : "");
+          if (path_len == 0U) {
+            _E ("Failed to get path from MLSVC_JSON_RESOURCE.");
+            continue;
+          }
 
-          if (ret == 0)
-            _I ("The resource with name '%s' is registered.", name);
-          else
-            _E ("Failed to register the resource with name '%s'.", name);
+          for (guint pidx = 0; pidx < path_len; pidx++) {
+            const gchar *path = NULL;
+
+            if (path_array)
+              path = json_array_get_string_element (path_array, pidx);
+            else
+              path = json_node_get_string (path_node);
+
+            if (!path) {
+              _E ("Failed to get path at '%d'th of '%s' from MLSVC_JSON_RESOURCE.",
+                  pidx, name);
+              continue;
+            }
+
+            ret = ml_agent_resource_add (
+                name, path, desc ? desc : "", app_info ? app_info : "");
+
+            if (ret == 0)
+              _I ("The resource at '%d'th of name '%s' is registered.", pidx, name);
+            else
+              _E ("Failed to register the resource with name '%s'.", name);
+          }
         }
         break;
       default:
@@ -233,6 +211,76 @@ _parse_json (const gchar *json_path, mlsvc_json_type_e json_type, const gchar *a
         break;
     }
   }
+}
+
+/** 
+ * @brief Internal function to get json configuration file.
+ */
+static void
+_get_json_config (const char *json_path, const gchar *app_info)
+{
+  g_autofree gchar *json_string = NULL;
+  g_autoptr (JsonParser) parser = NULL;
+  g_autoptr (GError) err = NULL;
+  g_autoptr (GList) members = NULL;
+  GList *iter;
+  JsonNode *root;
+  JsonObject *object;
+
+  if (!g_file_test (json_path, (GFileTest) (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))) {
+    _E ("The parameter, json_path, is invalid. It should be a valid string.");
+    return;
+  }
+
+  if (!g_file_get_contents (json_path, &json_string, NULL, NULL)) {
+    _E ("Failed to read configuration file '%s'.", json_path);
+    return;
+  }
+
+  parser = json_parser_new ();
+  if (!parser) {
+    _E ("Failed to parse configuration file, cannot allocate memory for JsonParser. Out of memory?");
+    return;
+  }
+
+  if (!json_parser_load_from_data (parser, json_string, -1, &err)) {
+    _E ("Failed to parse configuration file, cannot load json string (%s).",
+        err ? err->message : "Unknown error");
+    return;
+  }
+
+  root = json_parser_get_root (parser);
+  if (!root) {
+    _E ("Failed to parse configuration file, cannot get the top node from json string.");
+    return;
+  }
+
+  object = json_node_get_object (root);
+  members = json_object_get_members (object);
+
+  for (iter = members; iter != NULL; iter = iter->next) {
+    const gchar *name = (const gchar *) iter->data;
+    JsonNode *node;
+
+    if (g_ascii_strcasecmp (name, "model") == 0 || g_ascii_strcasecmp (name, "models") == 0) {
+      node = json_object_get_member (object, name);
+      _parse_json (node, MLSVC_JSON_MODEL, app_info);
+    } else if (g_ascii_strcasecmp (name, "pipeline") == 0
+               || g_ascii_strcasecmp (name, "pipelines") == 0) {
+      node = json_object_get_member (object, name);
+      _parse_json (node, MLSVC_JSON_PIPELINE, app_info);
+    } else if (g_ascii_strcasecmp (name, "resource") == 0
+               || g_ascii_strcasecmp (name, "resources") == 0) {
+      node = json_object_get_member (object, name);
+      _parse_json (node, MLSVC_JSON_RESOURCE, app_info);
+    } else {
+      _E ("Failed to parse configuration file, %s cannot get the valid type from configuration.",
+          name);
+      return;
+    }
+  }
+
+  return;
 }
 
 /**
@@ -299,10 +347,11 @@ PKGMGR_MDPARSER_PLUGIN_INSTALL (const char *pkgid, const char *appid, GList *met
   g_autofree gchar *app_info = _make_pkg_info (pkgid, appid, res_type, res_version);
   _I ("app_info = %s\n", app_info);
 
-  /* check description.json file */
-  g_autofree gchar *json_dir_path = g_build_filename (root_path, "res", "global", res_type, NULL);
+  /* check rpk_config.json file */
+  g_autofree gchar *json_file = g_build_filename (
+      root_path, "res", "global", res_type, "rpk_config.json", NULL);
 
-  _parse_json (json_dir_path, MLSVC_JSON_MODEL, app_info);
+  _get_json_config (json_file, app_info);
 
   _I ("PKGMGR_MDPARSER_PLUGIN_INSTALL finished");
   pkgmgrinfo_pkginfo_destroy_pkginfo (handle);
