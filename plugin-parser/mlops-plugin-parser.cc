@@ -213,10 +213,10 @@ _parse_json (JsonNode *node, mlsvc_json_type_e json_type, const gchar *app_info)
   }
 }
 
-/** 
+/**
  * @brief Internal function to get json configuration file.
  */
-static void
+static gboolean
 _get_json_config (const char *json_path, const gchar *app_info)
 {
   g_autofree gchar *json_string = NULL;
@@ -229,30 +229,30 @@ _get_json_config (const char *json_path, const gchar *app_info)
 
   if (!g_file_test (json_path, (GFileTest) (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))) {
     _E ("The parameter, json_path, is invalid. It should be a valid string.");
-    return;
+    return FALSE;
   }
 
   if (!g_file_get_contents (json_path, &json_string, NULL, NULL)) {
     _E ("Failed to read configuration file '%s'.", json_path);
-    return;
+    return FALSE;
   }
 
   parser = json_parser_new ();
   if (!parser) {
     _E ("Failed to parse configuration file, cannot allocate memory for JsonParser. Out of memory?");
-    return;
+    return FALSE;
   }
 
   if (!json_parser_load_from_data (parser, json_string, -1, &err)) {
     _E ("Failed to parse configuration file, cannot load json string (%s).",
         err ? err->message : "Unknown error");
-    return;
+    return FALSE;
   }
 
   root = json_parser_get_root (parser);
   if (!root) {
     _E ("Failed to parse configuration file, cannot get the top node from json string.");
-    return;
+    return FALSE;
   }
 
   object = json_node_get_object (root);
@@ -276,11 +276,11 @@ _get_json_config (const char *json_path, const gchar *app_info)
     } else {
       _E ("Failed to parse configuration file, %s cannot get the valid type from configuration.",
           name);
-      return;
+      return FALSE;
     }
   }
 
-  return;
+  return TRUE;
 }
 
 /**
@@ -338,10 +338,20 @@ PKGMGR_MDPARSER_PLUGIN_INSTALL (const char *pkgid, const char *appid, GList *met
 
   char *res_type = NULL;
   ret = pkgmgrinfo_pkginfo_get_res_type (handle, &res_type);
+  if (ret != PMINFO_R_OK) {
+    _E ("Failed to get res type.");
+    pkgmgrinfo_pkginfo_destroy_pkginfo (handle);
+    return -1;
+  }
   _I ("res_type = %s\n", res_type);
 
   char *res_version = NULL;
   ret = pkgmgrinfo_pkginfo_get_res_version (handle, &res_version);
+  if (ret != PMINFO_R_OK) {
+    _E ("Failed to get res version.");
+    pkgmgrinfo_pkginfo_destroy_pkginfo (handle);
+    return -1;
+  }
   _I ("res_version = %s\n", res_version);
 
   g_autofree gchar *app_info = _make_pkg_info (pkgid, appid, res_type, res_version);
@@ -351,7 +361,11 @@ PKGMGR_MDPARSER_PLUGIN_INSTALL (const char *pkgid, const char *appid, GList *met
   g_autofree gchar *json_file = g_build_filename (
       root_path, "res", "global", res_type, "rpk_config.json", NULL);
 
-  _get_json_config (json_file, app_info);
+  if (!_get_json_config (json_file, app_info)) {
+    _E ("Failed to parse the config file %s", json_file);
+    pkgmgrinfo_pkginfo_destroy_pkginfo (handle);
+    return -1;
+  }
 
   _I ("PKGMGR_MDPARSER_PLUGIN_INSTALL finished");
   pkgmgrinfo_pkginfo_destroy_pkginfo (handle);
