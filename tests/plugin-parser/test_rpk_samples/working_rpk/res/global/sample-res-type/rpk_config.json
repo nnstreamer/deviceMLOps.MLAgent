@@ -1,0 +1,8 @@
+{
+  "models" : {
+    "name" : "dummy-global-model",
+    "model" : "dummy-global.tflite",
+    "description" : "This is dummy global model",
+    "activate" : "true"
+  }
+}
