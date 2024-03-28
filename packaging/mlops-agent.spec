@@ -184,6 +184,7 @@ export MLAGENT_BUILD_ROOT_PATH=$(pwd)/%{builddir}
 bash %{test_script} ./tests/daemon/unittest_ml_agent
 bash %{test_script} ./tests/daemon/unittest_service_db
 bash %{test_script} ./tests/daemon/unittest_gdbus_util
+bash %{test_script} ./tests/plugin-parser/unittest_mlops_plugin_parser
 %endif # unit_test
 
 %install

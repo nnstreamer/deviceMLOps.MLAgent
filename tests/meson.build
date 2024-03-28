@@ -40,6 +40,7 @@ if get_option('enable-test')
   gtest_dep = dependency('gtest', required: false)
   if gtest_dep.found()
     subdir('daemon')
+    subdir('plugin-parser')
   else
     warning('The enable-test option requires google-test.')
   endif
