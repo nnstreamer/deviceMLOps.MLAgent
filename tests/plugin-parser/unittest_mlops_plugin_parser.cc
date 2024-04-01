@@ -178,7 +178,7 @@ GModule *PkgMgrInfoMockTestFixture::module = nullptr;
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_pkginfo() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, test_n1)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n1)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -192,7 +192,7 @@ TEST_F (PkgMgrInfoMockTestFixture, test_n1)
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_type() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, test_n2)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n2)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -212,7 +212,7 @@ TEST_F (PkgMgrInfoMockTestFixture, test_n2)
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_root_path() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, test_n3)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n3)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -237,7 +237,7 @@ TEST_F (PkgMgrInfoMockTestFixture, test_n3)
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_res_type() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, test_n4)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n4)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -265,7 +265,7 @@ TEST_F (PkgMgrInfoMockTestFixture, test_n4)
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_res_version() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, test_n5)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n5)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -296,7 +296,7 @@ TEST_F (PkgMgrInfoMockTestFixture, test_n5)
 /**
  * @brief Negative test case of invalid config file.
  */
-TEST_F (PkgMgrInfoMockTestFixture, test_n6)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n6)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -333,7 +333,7 @@ TEST_F (PkgMgrInfoMockTestFixture, test_n6)
 /**
  * @brief Negative test case of invalid config file.
  */
-TEST_F (PkgMgrInfoMockTestFixture, test_n7)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n7)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -370,7 +370,7 @@ TEST_F (PkgMgrInfoMockTestFixture, test_n7)
 /**
  * @brief Positive test case of sample rpk package install.
  */
-TEST_F (PkgMgrInfoMockTestFixture, test_p1)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install_p1)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -407,7 +407,7 @@ TEST_F (PkgMgrInfoMockTestFixture, test_p1)
 /**
  * @brief Positive test case of tpk package.
  */
-TEST_F (PkgMgrInfoMockTestFixture, test_tpk)
+TEST_F (PkgMgrInfoMockTestFixture, tpk_install_p1)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
