@@ -4,5 +4,17 @@
     "model" : "dummy-global.tflite",
     "description" : "This is dummy global model",
     "activate" : "true"
+  },
+  "pipelines" : {
+    "name" : "dummy-global-pipeline",
+    "pipeline" : "some ! valid ! gstreamer ! nnstreamer ! pipeline ! description"
+  },
+  "resources" : {
+    "name" : "dummy-global-resource",
+    "description" : "This is dummy global resource",
+    "path" : [
+      "resource_00.dat",
+      "resource_01.dat"
+    ]
   }
 }
