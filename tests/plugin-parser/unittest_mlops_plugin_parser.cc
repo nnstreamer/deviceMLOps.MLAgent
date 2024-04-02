@@ -170,6 +170,24 @@ class PkgMgrInfoMockTestFixture : public ::testing::Test
 
     return func_ptr (pkgid.c_str (), appid.c_str (), metadata);
   }
+
+  /**
+   * @brief Make a new file with given path and set its content with given value.
+   */
+  bool create_and_set_file (const gchar *path, const gchar *value) {
+    bool ret = true;
+    GFile *new_file = g_file_new_for_path (path);
+    GError *error = NULL;
+
+    if (!g_file_set_contents (g_file_get_path (new_file), value, -1, &error)) {
+      g_warning ("Failed to create/write file '%s': %s\n", path, error->message);
+      g_clear_error (&error);
+      ret = false;
+    }
+    g_object_unref (new_file);
+
+    return ret;
+  }
 };
 
 GTestDBus *PkgMgrInfoMockTestFixture::dbus = nullptr;
@@ -331,7 +349,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install6_n)
 }
 
 /**
- * @brief Negative test case of invalid config file.
+ * @brief Negative test case of various invalid config files.
  */
 TEST_F (PkgMgrInfoMockTestFixture, rpk_install7_n)
 {
@@ -342,29 +360,99 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install7_n)
       .WillRepeatedly (Return (PMINFO_R_OK));
 
   EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_pkginfo (_, _))
-      .WillOnce (Return (PMINFO_R_OK));
+      .WillRepeatedly (Return (PMINFO_R_OK));
 
   char pkg_type_rpk[] = "rpk";
   EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_type (_, _))
-      .WillOnce (DoAll (SetArgPointee<1> (pkg_type_rpk),
+      .WillRepeatedly (DoAll (SetArgPointee<1> (pkg_type_rpk),
                         Return (PMINFO_R_OK)));
 
   char root_path[] = "../tests/plugin-parser/test_rpk_samples/invalid_rpk";
   EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_root_path (_, _))
-      .WillOnce (DoAll (SetArgPointee<1> (root_path),
+      .WillRepeatedly (DoAll (SetArgPointee<1> (root_path),
                         Return (PMINFO_R_OK)));
 
   char res_type[] = "sample-res-type";
   EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_res_type (_, _))
-      .WillOnce (DoAll (SetArgPointee<1> (res_type),
+      .WillRepeatedly (DoAll (SetArgPointee<1> (res_type),
                         Return (PMINFO_R_OK)));
 
   char res_version[] = "1.5.0";
   EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_res_version (_, _))
-      .WillOnce (DoAll (SetArgPointee<1> (res_version),
+      .WillRepeatedly (DoAll (SetArgPointee<1> (res_version),
                         Return (PMINFO_R_OK)));
 
+  /* create and set json file with invalid value */
+  g_autofree gchar *rpk_config_dir_path = g_strdup_printf ("%s/res/global/%s/", root_path, res_type);
+  g_autofree gchar *config_file_path = g_strdup_printf ("%s/rpk_config.json", rpk_config_dir_path);
+
+  /* test 1 : invalid json format */
+  const gchar *json_with_invalid_format = R""""(
+{
+  some invalid json
+}
+)"""";
+  ASSERT_TRUE (create_and_set_file (config_file_path, json_with_invalid_format));
   EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
+
+  if (remove (config_file_path) != 0) {
+    g_printerr ("Error removing file: %s\n", g_strerror (errno));
+    ASSERT_TRUE (false);
+  }
+
+  /* test 2 : model has no 'name' field */
+  const gchar *json_with_no_name = R""""(
+{
+  "models" : {
+    "model" : "dummy-global.tflite",
+    "description" : "No name field, invalid rpk",
+    "activate" : "true"
+  }
+}
+)"""";
+  ASSERT_TRUE (create_and_set_file (config_file_path, json_with_no_name));
+  EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
+
+  if (remove (config_file_path) != 0) {
+    g_printerr ("Error removing file: %s\n", g_strerror (errno));
+    ASSERT_TRUE (false);
+  }
+
+  /* test 3 : pipeline has no 'name' field */
+  const gchar *json_with_no_name_pipeline = R""""(
+{
+  "pipelines" : {
+    "pipeline" : "pipe ! line",
+    "description" : "No name field, invalid rpk"
+  }
+}
+)"""";
+  ASSERT_TRUE (create_and_set_file (config_file_path, json_with_no_name_pipeline));
+  EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
+
+  if (remove (config_file_path) != 0) {
+    g_printerr ("Error removing file: %s\n", g_strerror (errno));
+    ASSERT_TRUE (false);
+  }
+
+  /* test 4 : resource has no 'name' field */
+  const gchar *json_with_no_name_resource = R""""(
+{
+  "resources" : {
+    "description" : "No name filed, invalid rpk",
+    "path" : [
+      "resource_00.dat"
+    ]
+  }
+}
+)"""";
+  ASSERT_TRUE (create_and_set_file (config_file_path, json_with_no_name_resource));
+  EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
+
+  if (remove (config_file_path) != 0) {
+    g_printerr ("Error removing file: %s\n", g_strerror (errno));
+    ASSERT_TRUE (false);
+  }
 }
 
 /**
@@ -423,13 +511,13 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_scenario_p1)
       .WillRepeatedly (DoAll (SetArgPointee<1> (res_version),
                         Return (PMINFO_R_OK)));
 
-  // install rpk
+  /* install rpk */
   EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
 
-  // upgrade rpk
+  /* upgrade rpk */
   EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_UPGRADE", pkgid, appid, NULL), 0);
 
-  // uninstall the rpk
+  /* uninstall the rpk */
   EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_UNINSTALL", pkgid, appid, NULL), 0);
 }
 
