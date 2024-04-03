@@ -33,6 +33,7 @@
 #define _W(fmt, arg...) LOG_V (DLOG_WARN, __TAG_, fmt, ##arg)
 #define _E(fmt, arg...) LOG_V (DLOG_ERROR, __TAG_, fmt, ##arg)
 #define _F(fmt, arg...) LOG_V (DLOG_FATAL, __TAG_, fmt, ##arg)
+#define STR_IS_VALID(s) ((s) && (s)[0] != '\0')
 
 /**
  * @brief Struct used to parse metadata tag from xml file.
@@ -88,10 +89,125 @@ typedef enum {
 } mlsvc_json_type_e;
 
 /**
- * @brief Parse json and update ml-service database via invoking daemon.
+ * @brief Internal enumeration for package manager event types.
+ */
+typedef enum {
+  MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_INSTALL = 0,
+  MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_UNINSTALL = 1,
+  MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_UPGRADE = 2,
+  MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_MAX
+} mlsvc_package_manager_event_type_e;
+
+/**
+ * @brief Internal function for uninstall models and pipelines.
  */
 static void
-_parse_json (JsonNode *node, mlsvc_json_type_e json_type, const gchar *app_info)
+_uninstall_rpk (const char *name, const char *_info, mlsvc_json_type_e json_type)
+{
+  g_autoptr (JsonParser) parser = NULL;
+  g_autoptr (GError) err = NULL;
+  JsonNode *root;
+  JsonObject *object;
+  JsonArray *array = NULL;
+
+  parser = json_parser_new ();
+  guint _info_len = 1U;
+
+  if (!json_parser_load_from_data (parser, _info, -1, &err)) {
+    _E ("Failed to load '%s' info data.", name);
+    return;
+  }
+
+  root = json_parser_get_root (parser);
+  if (!root) {
+    _E ("Failed to load '%s' info, cannot get the top node from info.", name);
+    return;
+  }
+
+  if (JSON_NODE_HOLDS_ARRAY (root)) {
+    array = json_node_get_array (root);
+    if (!array) {
+      _E ("Failed to get root array from '%s' info", name);
+      return;
+    }
+
+    _info_len = json_array_get_length (array);
+  }
+
+  /* Update ML service database. */
+  for (guint i = 0; i < _info_len; ++i) {
+    int ret = 0;
+    if (array)
+      object = json_array_get_object_element (array, i);
+    else
+      object = json_node_get_object (root);
+
+    const gchar *app_info = json_object_get_string_member (object, "app_info");
+
+    /* If app info is empty string, it is not installed from rpk. */
+    if (!STR_IS_VALID (app_info))
+      continue;
+
+    g_autoptr (JsonParser) app_info_parser = json_parser_new ();
+
+    if (!json_parser_load_from_data (app_info_parser, app_info, -1, &err)) {
+      _E ("Failed to load '%s' app_info data.", name);
+      return;
+    }
+
+    JsonNode *app_info_root = json_parser_get_root (app_info_parser);
+    if (!app_info_root) {
+      _E ("Failed to load '%s'app_info, cannot get the top node from app_info.", name);
+      return;
+    }
+
+    JsonObject *app_info_object = json_node_get_object (app_info_root);
+    const gchar *is_rpk = json_object_get_string_member (app_info_object, "is_rpk");
+
+    if (!is_rpk) {
+      _E ("Failed to get 'is_rpk' from '%s' app_info.", name);
+      return;
+    }
+    if (g_ascii_strcasecmp (is_rpk, "F") == 0)
+      continue;
+
+    switch (json_type) {
+      case MLSVC_JSON_MODEL:
+        {
+          const gchar *version = json_object_get_string_member (object, "version");
+          ret = ml_agent_model_delete_force (
+              name, (const uint32_t) g_ascii_strtoull (version, NULL, 10), TRUE);
+
+          if (ret == 0) {
+            _I ("The model is deleted. - name: %s, version %s", name, version);
+          } else {
+            _E ("Failed to delete model return %d. - name: %s, version: %s",
+                ret, name, version);
+          }
+        }
+        break;
+      case MLSVC_JSON_RESOURCE:
+        {
+          /*TODO: Support delete resource installed by rpk*/
+        }
+        break;
+      default:
+        _E ("Unknown json type '%d', internal error?", json_type);
+        return;
+        break;
+    }
+  }
+
+  _I ("All deleted. - name: %s", name);
+  return;
+}
+
+/**
+ * @brief Parse json and update ml-service database via invoking daemon.
+ */
+static gboolean
+_parse_json (JsonNode *node, const gchar *app_info, mlsvc_json_type_e json_type,
+    mlsvc_package_manager_event_type_e event)
 {
   JsonArray *array = NULL;
   JsonObject *object = NULL;
@@ -102,7 +218,7 @@ _parse_json (JsonNode *node, mlsvc_json_type_e json_type, const gchar *app_info)
     array = json_node_get_array (node);
     if (!array) {
       _E ("Failed to get array from json");
-      return;
+      return FALSE;
     }
 
     json_len = json_array_get_length (array);
@@ -125,19 +241,35 @@ _parse_json (JsonNode *node, mlsvc_json_type_e json_type, const gchar *app_info)
 
           if (!name || !model) {
             _E ("Failed to get name or model from MLSVC_JSON_MODEL.");
-            continue;
+            return FALSE;
           }
 
-          guint version;
-          bool active = (activate && g_ascii_strcasecmp (activate, "true") == 0);
+          if (event == MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_INSTALL) {
+            guint version;
+            bool active = (activate && g_ascii_strcasecmp (activate, "true") == 0);
 
-          ret = ml_agent_model_register (name, model, active, desc ? desc : "",
-              app_info ? app_info : "", &version);
+            ret = ml_agent_model_register (name, model, active,
+                desc ? desc : "", app_info ? app_info : "", &version);
 
-          if (ret == 0)
-            _I ("The model with name '%s' is registered as version '%u'.", name, version);
-          else
-            _E ("Failed to register the model with name '%s'.", name);
+            if (ret == 0)
+              _I ("The model with name '%s' is registered as version '%u'.", name, version);
+            else {
+              _E ("Failed to register the model with name '%s'.", name);
+              return FALSE;
+            }
+          } else if (event == MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_UNINSTALL) {
+            g_autofree char *model_info = NULL;
+            ret = ml_agent_model_get_all (name, &model_info);
+
+            if (ret == 0) {
+              _uninstall_rpk (name, model_info, json_type);
+            } else {
+              _I ("The model with name '%s' is already deleted or not installed.", name);
+            }
+          } else {
+            _E ("Unknown event type '%d', internal error?", event);
+            return FALSE;
+          }
         }
         break;
       case MLSVC_JSON_PIPELINE:
@@ -147,15 +279,32 @@ _parse_json (JsonNode *node, mlsvc_json_type_e json_type, const gchar *app_info)
 
           if (!name || !pipe) {
             _E ("Failed to get name or pipeline from MLSVC_JSON_PIPELINE.");
-            continue;
+            return FALSE;
           }
 
-          ret = ml_agent_pipeline_set_description (name, pipe);
+          if (event == MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_INSTALL) {
+            ret = ml_agent_pipeline_set_description (name, pipe);
 
-          if (ret == 0)
-            _I ("The pipeline description with name '%s' is registered.", name);
-          else
-            _E ("Failed to register pipeline with name '%s'.", name);
+            if (ret == 0)
+              _I ("The pipeline description with name '%s' is registered.", name);
+            else {
+              _E ("Failed to register pipeline with name '%s'.", name);
+              return FALSE;
+            }
+
+          } else if (event == MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_UNINSTALL) {
+            ret = ml_agent_pipeline_delete (name);
+
+            if (ret == 0)
+              _I ("The pipeline description with name '%s' is deleted.", name);
+            else {
+              _E ("Failed to delete pipeline with name '%s'.", name);
+              return FALSE;
+            }
+          } else {
+            _E ("Unknown event type '%d', internal error?", event);
+            return FALSE;
+          }
         }
         break;
       case MLSVC_JSON_RESOURCE:
@@ -168,7 +317,7 @@ _parse_json (JsonNode *node, mlsvc_json_type_e json_type, const gchar *app_info)
 
           if (!name) {
             _E ("Failed to get name from MLSVC_JSON_RESOURCE.");
-            continue;
+            return FALSE;
           }
 
           path_len = 1U;
@@ -179,45 +328,64 @@ _parse_json (JsonNode *node, mlsvc_json_type_e json_type, const gchar *app_info)
 
           if (path_len == 0U) {
             _E ("Failed to get path from MLSVC_JSON_RESOURCE.");
-            continue;
+            return FALSE;
           }
 
-          for (guint pidx = 0; pidx < path_len; pidx++) {
-            const gchar *path = NULL;
+          if (event == MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_INSTALL) {
+            for (guint pidx = 0; pidx < path_len; pidx++) {
+              const gchar *path = NULL;
 
-            if (path_array)
-              path = json_array_get_string_element (path_array, pidx);
-            else
-              path = json_node_get_string (path_node);
+              if (path_array)
+                path = json_array_get_string_element (path_array, pidx);
+              else
+                path = json_node_get_string (path_node);
 
-            if (!path) {
-              _E ("Failed to get path at '%d'th of '%s' from MLSVC_JSON_RESOURCE.",
-                  pidx, name);
-              continue;
+              if (!path) {
+                _E ("Failed to get path at '%d'th of '%s' from MLSVC_JSON_RESOURCE.",
+                    pidx, name);
+                return FALSE;
+              }
+
+              ret = ml_agent_resource_add (
+                  name, path, desc ? desc : "", app_info ? app_info : "");
+
+              if (ret == 0)
+                _I ("The resource at '%d'th of name '%s' is registered.", pidx, name);
+              else {
+                _E ("Failed to register the resource with name '%s'.", name);
+                return FALSE;
+              }
+            }
+          } else if (event == MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_UNINSTALL) {
+            ret = ml_agent_resource_delete (name);
+
+            if (ret == 0) {
+              _I ("The resource is deleted. - name: %s", name);
+            } else {
+              _I ("The model with name '%s' is already deleted or not installed", name);
             }
 
-            ret = ml_agent_resource_add (
-                name, path, desc ? desc : "", app_info ? app_info : "");
-
-            if (ret == 0)
-              _I ("The resource at '%d'th of name '%s' is registered.", pidx, name);
-            else
-              _E ("Failed to register the resource with name '%s'.", name);
+          } else {
+            _E ("Unknown event type '%d', internal error?", event);
+            return FALSE;
           }
         }
         break;
       default:
         _E ("Unknown data type '%d', internal error?", json_type);
+        return FALSE;
         break;
     }
   }
+  return TRUE;
 }
 
 /**
  * @brief Internal function to get json configuration file.
  */
 static gboolean
-_get_json_config (const char *json_path, const gchar *app_info)
+_get_json_config (const char *json_path, const gchar *app_info,
+    mlsvc_package_manager_event_type_e event)
 {
   g_autofree gchar *json_string = NULL;
   g_autoptr (JsonParser) parser = NULL;
@@ -264,15 +432,24 @@ _get_json_config (const char *json_path, const gchar *app_info)
 
     if (g_ascii_strcasecmp (name, "model") == 0 || g_ascii_strcasecmp (name, "models") == 0) {
       node = json_object_get_member (object, name);
-      _parse_json (node, MLSVC_JSON_MODEL, app_info);
+      if (!_parse_json (node, app_info, MLSVC_JSON_MODEL, event)) {
+        _E ("Failed to parse the models");
+        return FALSE;
+      }
     } else if (g_ascii_strcasecmp (name, "pipeline") == 0
                || g_ascii_strcasecmp (name, "pipelines") == 0) {
       node = json_object_get_member (object, name);
-      _parse_json (node, MLSVC_JSON_PIPELINE, app_info);
+      if (!_parse_json (node, app_info, MLSVC_JSON_PIPELINE, event)) {
+        _E ("Failed to parse the pipelines");
+        return FALSE;
+      }
     } else if (g_ascii_strcasecmp (name, "resource") == 0
                || g_ascii_strcasecmp (name, "resources") == 0) {
       node = json_object_get_member (object, name);
-      _parse_json (node, MLSVC_JSON_RESOURCE, app_info);
+      if (!_parse_json (node, app_info, MLSVC_JSON_RESOURCE, event)) {
+        _E ("Failed to parse the resources.");
+        return FALSE;
+      }
     } else {
       _E ("Failed to parse configuration file, %s cannot get the valid type from configuration.",
           name);
@@ -283,18 +460,18 @@ _get_json_config (const char *json_path, const gchar *app_info)
   return TRUE;
 }
 
-/**
- * @brief Handle INSTALL process. Tizen app-installer invoke this function.
+/** 
+ * @brief Internal function to set pkg-mgr parser
  */
-extern "C" int
-PKGMGR_MDPARSER_PLUGIN_INSTALL (const char *pkgid, const char *appid, GList *metadata)
+static int
+_set_pkgmgr_plugin (const char *pkgid, const char *appid, GList *metadata,
+    mlsvc_package_manager_event_type_e event)
 {
   GList *list = NULL;
   _metadata_s *detail = NULL;
   pkgmgrinfo_pkginfo_h handle;
   int ret = 0;
 
-  _I ("PKGMGR_MDPARSER_PLUGIN_INSTALL called");
   _I ("pkgid = %s, appid = %s\n", pkgid, appid);
 
   /* check metadata key/value */
@@ -361,16 +538,27 @@ PKGMGR_MDPARSER_PLUGIN_INSTALL (const char *pkgid, const char *appid, GList *met
   g_autofree gchar *json_file = g_build_filename (
       root_path, "res", "global", res_type, "rpk_config.json", NULL);
 
-  if (!_get_json_config (json_file, app_info)) {
+  if (!_get_json_config (json_file, app_info, event)) {
     _E ("Failed to parse the config file %s", json_file);
     pkgmgrinfo_pkginfo_destroy_pkginfo (handle);
     return -1;
   }
 
-  _I ("PKGMGR_MDPARSER_PLUGIN_INSTALL finished");
+  _I ("PKGMGR_MDPARSER_PLUGIN finished");
   pkgmgrinfo_pkginfo_destroy_pkginfo (handle);
 
   return 0;
+}
+
+/**
+ * @brief Handle INSTALL process. Tizen app-installer invoke this function.
+ */
+extern "C" int
+PKGMGR_MDPARSER_PLUGIN_INSTALL (const char *pkgid, const char *appid, GList *metadata)
+{
+  _I ("PKGMGR_MDPARSER_PLUGIN_INSTALL called");
+  return _set_pkgmgr_plugin (
+      pkgid, appid, metadata, MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_INSTALL);
 }
 
 /**
@@ -380,7 +568,8 @@ extern "C" int
 PKGMGR_MDPARSER_PLUGIN_UNINSTALL (const char *pkgid, const char *appid, GList *metadata)
 {
   _I ("PKGMGR_MDPARSER_PLUGIN_UNINSTALL called");
-  return 0;
+  return _set_pkgmgr_plugin (
+      pkgid, appid, metadata, MLSVC_PKGMGR_MDPARSER_PLUGIN_EVENT_TYPE_UNINSTALL);
 }
 
 /**
@@ -392,7 +581,7 @@ PKGMGR_MDPARSER_PLUGIN_UPGRADE (const char *pkgid, const char *appid, GList *met
   _I ("PKGMGR_MDPARSER_PLUGIN_UPGRADE called");
   PKGMGR_MDPARSER_PLUGIN_UNINSTALL (pkgid, appid, metadata);
   PKGMGR_MDPARSER_PLUGIN_INSTALL (pkgid, appid, metadata);
-
+  
   return 0;
 }
 
