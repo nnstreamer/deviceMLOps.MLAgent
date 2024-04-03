@@ -675,9 +675,10 @@ MLServiceDB::get_model (const std::string name, const gint version, gchar **mode
  * @brief Delete the model.
  * @param[in] name The unique name to delete.
  * @param[in] version The version of the model to delete.
+ * @param[in] force The model to delete by force (default is false). 
  */
 void
-MLServiceDB::delete_model (const std::string name, const guint version)
+MLServiceDB::delete_model (const std::string name, const guint version, const gboolean force)
 {
   char *sql;
   sqlite3_stmt *res;
@@ -695,7 +696,10 @@ MLServiceDB::delete_model (const std::string name, const guint version)
   }
 
   if (version > 0U) {
-    if (is_model_activated (key_with_prefix, version))
+    if (force)
+      ml_logw ("The model with name %s and version %u may be activated, delete it from ml-service.",
+          name.c_str (), version);
+    else if (is_model_activated (key_with_prefix, version))
       throw std::invalid_argument ("The model with name " + name
                                    + " and version " + std::to_string (version)
                                    + " is activated, cannot delete it.");
@@ -1147,6 +1151,33 @@ svcdb_model_delete (const gchar *name, const guint version)
 
   return ret;
 }
+
+/**
+ * @brief Delete the model.
+ * @param[in] name The unique name to delete.
+ * @param[in] version The version of the model to delete.
+ * @param[in] force If the force is set to @c TRUE, the target model will be forced to delete.
+ * @return @c 0 on success. Otherwise a negative error value.
+ */
+gint
+svcdb_model_delete_force (const gchar *name, const guint version, const gboolean force)
+{
+  gint ret = 0;
+  MLServiceDB *db = svcdb_get ();
+
+  try {
+    db->delete_model (name, version, force);
+  } catch (const std::invalid_argument &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EINVAL;
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    ret = -EIO;
+  }
+
+  return ret;
+}
+
 
 /**
  * @brief Set the resource with given name.
