@@ -569,10 +569,9 @@ extern "C" int
 PKGMGR_MDPARSER_PLUGIN_UPGRADE (const char *pkgid, const char *appid, GList *metadata)
 {
   _I ("PKGMGR_MDPARSER_PLUGIN_UPGRADE called");
-  PKGMGR_MDPARSER_PLUGIN_UNINSTALL (pkgid, appid, metadata);
-  PKGMGR_MDPARSER_PLUGIN_INSTALL (pkgid, appid, metadata);
 
-  return 0;
+  PKGMGR_MDPARSER_PLUGIN_UNINSTALL (pkgid, appid, metadata);
+  return PKGMGR_MDPARSER_PLUGIN_INSTALL (pkgid, appid, metadata);
 }
 
 /**

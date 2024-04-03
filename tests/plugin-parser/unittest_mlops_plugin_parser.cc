@@ -178,7 +178,7 @@ GModule *PkgMgrInfoMockTestFixture::module = nullptr;
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_pkginfo() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n1)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install1_n)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -192,7 +192,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n1)
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_type() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n2)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install2_n)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -212,7 +212,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n2)
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_root_path() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n3)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install3_n)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -237,7 +237,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n3)
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_res_type() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n4)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install4_n)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -265,7 +265,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n4)
 /**
  * @brief Negative test case of pkgmgrinfo_pkginfo_get_res_version() failed.
  */
-TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n5)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install5_n)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -296,7 +296,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n5)
 /**
  * @brief Negative test case of invalid config file.
  */
-TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n6)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install6_n)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -333,7 +333,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n6)
 /**
  * @brief Negative test case of invalid config file.
  */
-TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n7)
+TEST_F (PkgMgrInfoMockTestFixture, rpk_install7_n)
 {
   std::string pkgid = "pkgid";
   std::string appid = "appid";
@@ -368,43 +368,6 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install_n7)
 }
 
 /**
- * @brief Positive test case of sample rpk package install.
- */
-TEST_F (PkgMgrInfoMockTestFixture, rpk_install_p1)
-{
-  std::string pkgid = "pkgid";
-  std::string appid = "appid";
-
-  EXPECT_CALL (*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_destroy_pkginfo (_))
-      .WillRepeatedly (Return (PMINFO_R_OK));
-
-  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_pkginfo (_, _))
-      .WillOnce (Return (PMINFO_R_OK));
-
-  char pkg_type_rpk[] = "rpk";
-  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_type (_, _))
-      .WillOnce (DoAll (SetArgPointee<1> (pkg_type_rpk),
-                        Return (PMINFO_R_OK)));
-
-  char root_path[] = "../tests/plugin-parser/test_rpk_samples/working_rpk";
-  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_root_path (_, _))
-      .WillOnce (DoAll (SetArgPointee<1> (root_path),
-                        Return (PMINFO_R_OK)));
-
-  char res_type[] = "sample-res-type";
-  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_res_type (_, _))
-      .WillOnce (DoAll (SetArgPointee<1> (res_type),
-                        Return (PMINFO_R_OK)));
-
-  char res_version[] = "1.5.0";
-  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_res_version (_, _))
-      .WillOnce (DoAll (SetArgPointee<1> (res_version),
-                        Return (PMINFO_R_OK)));
-
-  EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
-}
-
-/**
  * @brief Positive test case of tpk package.
  */
 TEST_F (PkgMgrInfoMockTestFixture, tpk_install_p1)
@@ -424,6 +387,114 @@ TEST_F (PkgMgrInfoMockTestFixture, tpk_install_p1)
                         Return (PMINFO_R_OK)));
 
   EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
+}
+
+/**
+ * @brief Positive test case of sample rpk package install/upgrade/uninstall.
+ */
+TEST_F (PkgMgrInfoMockTestFixture, rpk_scenario_p1)
+{
+  std::string pkgid = "pkgid";
+  std::string appid = "appid";
+
+  EXPECT_CALL (*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_destroy_pkginfo (_))
+      .WillRepeatedly (Return (PMINFO_R_OK));
+
+  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_pkginfo (_, _))
+      .WillRepeatedly (Return (PMINFO_R_OK));
+
+  char pkg_type_rpk[] = "rpk";
+  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_type (_, _))
+      .WillRepeatedly (DoAll (SetArgPointee<1> (pkg_type_rpk),
+                        Return (PMINFO_R_OK)));
+
+  char root_path[] = "../tests/plugin-parser/test_rpk_samples/working_rpk";
+  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_root_path (_, _))
+      .WillRepeatedly (DoAll (SetArgPointee<1> (root_path),
+                        Return (PMINFO_R_OK)));
+
+  char res_type[] = "sample-res-type";
+  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_res_type (_, _))
+      .WillRepeatedly (DoAll (SetArgPointee<1> (res_type),
+                        Return (PMINFO_R_OK)));
+
+  char res_version[] = "1.5.0";
+  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_res_version (_, _))
+      .WillRepeatedly (DoAll (SetArgPointee<1> (res_version),
+                        Return (PMINFO_R_OK)));
+
+  // install rpk
+  EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
+
+  // upgrade rpk
+  EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_UPGRADE", pkgid, appid, NULL), 0);
+
+  // uninstall the rpk
+  EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_UNINSTALL", pkgid, appid, NULL), 0);
+}
+
+/**
+ * @brief Negative test case of RECOVERINSTALL.
+ */
+TEST_F (PkgMgrInfoMockTestFixture, RECOVERINSTALL_n)
+{
+  std::string pkgid = "pkgid";
+  std::string appid = "appid";
+
+  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_pkginfo (_, _))
+      .WillOnce (Return (PMINFO_R_ERROR));
+
+  EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_RECOVERINSTALL", pkgid, appid, NULL), 0);
+}
+
+/**
+ * @brief Negative test case of RECOVERUPGRADE.
+ */
+TEST_F (PkgMgrInfoMockTestFixture, RECOVERUPGRADE_n)
+{
+  std::string pkgid = "pkgid";
+  std::string appid = "appid";
+
+  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_pkginfo (_, _))
+      .WillRepeatedly (Return (PMINFO_R_ERROR));
+
+  EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_RECOVERUPGRADE", pkgid, appid, NULL), 0);
+}
+
+/**
+ * @brief Negative test case of RECOVERUNINSTALL.
+ */
+TEST_F (PkgMgrInfoMockTestFixture, RECOVERUNINSTALL_n)
+{
+  std::string pkgid = "pkgid";
+  std::string appid = "appid";
+
+  EXPECT_CALL(*pkgMgrInfoMockInstance, pkgmgrinfo_pkginfo_get_pkginfo (_, _))
+      .WillOnce (Return (PMINFO_R_ERROR));
+
+  EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_RECOVERUNINSTALL", pkgid, appid, NULL), 0);
+}
+
+/**
+ * @brief Positive test case of CLEAN.
+ */
+TEST_F (PkgMgrInfoMockTestFixture, clean_p1)
+{
+  std::string pkgid = "pkgid";
+  std::string appid = "appid";
+
+  EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_CLEAN", pkgid, appid, NULL), 0);
+}
+
+/**
+ * @brief Positive test case of UNDO.
+ */
+TEST_F (PkgMgrInfoMockTestFixture, undo_p1)
+{
+  std::string pkgid = "pkgid";
+  std::string appid = "appid";
+
+  EXPECT_EQ (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_UNDO", pkgid, appid, NULL), 0);
 }
 
 /**
