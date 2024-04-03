@@ -146,6 +146,17 @@ int ml_agent_model_get_all (const char *name, char **model_info);
 int ml_agent_model_delete (const char *name, const uint32_t version);
 
 /**
+ * @brief An interface exported for removing the model of @a name and @a version.
+ * @details If version is 0, this function removes all registered model of @a name.
+ * @param[in] name A name indicating the model that would be removed.
+ * @param[in] version A version for identifying a specific model.
+ * @param[in] force A force to forcibly delete a specific model.
+ * @return 0 on success, a negative error value if failed.
+ */
+int ml_agent_model_delete_force (
+    const char *name, const uint32_t version, const gboolean force);
+
+/**
  * @brief An interface exported for adding the resource.
  * @param[in] name A name indicating the resource.
  * @param[in] path A path that specifies the location of the resource.

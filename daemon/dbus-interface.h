@@ -47,6 +47,7 @@
 #define DBUS_MODEL_I_HANDLER_GET_ACTIVATED      "handle-get-activated"
 #define DBUS_MODEL_I_HANDLER_GET_ALL            "handle-get-all"
 #define DBUS_MODEL_I_HANDLER_DELETE             "handle-delete"
+#define DBUS_MODEL_I_HANDLER_DELETE_FORCE       "handle-delete-force"
 
 /* Resource Interface */
 #define DBUS_RESOURCE_INTERFACE         "org.tizen.machinelearning.service.resource"
