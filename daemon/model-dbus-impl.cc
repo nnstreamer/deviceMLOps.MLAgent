@@ -180,38 +180,17 @@ gdbus_cb_model_get_all (MachinelearningServiceModel *obj,
  * @param invoc Method invocation handle.
  * @param name The name of target model.
  * @param version The version of target model.
- * @return @c TRUE if the request is handled. FALSE if the service is not available.
- */
-static gboolean
-gdbus_cb_model_delete (MachinelearningServiceModel *obj,
-    GDBusMethodInvocation *invoc, const gchar *name, const guint version)
-{
-  gint ret = 0;
-
-  ret = svcdb_model_delete (name, version);
-  machinelearning_service_model_complete_delete (obj, invoc, ret);
-
-  return TRUE;
-}
-
-/**
- * @brief The callback function of delete method
- *
- * @param obj Proxy instance.
- * @param invoc Method invocation handle.
- * @param name The name of target model.
- * @param version The version of target model.
  * @param force If the force is set to @c TRUE, the target model will be forced to delete.
  * @return @c TRUE if the request is handled. FALSE if the service is not available.
  */
 static gboolean
-gdbus_cb_model_delete_force (MachinelearningServiceModel *obj,
+gdbus_cb_model_delete (MachinelearningServiceModel *obj,
     GDBusMethodInvocation *invoc, const gchar *name, const guint version, const gboolean force)
 {
   gint ret = 0;
 
-  ret = svcdb_model_delete_force (name, version, force);
-  machinelearning_service_model_complete_delete_force (obj, invoc, ret);
+  ret = svcdb_model_delete (name, version, force);
+  machinelearning_service_model_complete_delete (obj, invoc, ret);
 
   return TRUE;
 }
@@ -259,12 +238,6 @@ static struct gdbus_signal_info handler_infos[] = {
   {
       .signal_name = DBUS_MODEL_I_HANDLER_DELETE,
       .cb = G_CALLBACK (gdbus_cb_model_delete),
-      .cb_data = NULL,
-      .handler_id = 0,
-  },
-  {
-      .signal_name = DBUS_MODEL_I_HANDLER_DELETE_FORCE,
-      .cb = G_CALLBACK (gdbus_cb_model_delete_force),
       .cb_data = NULL,
       .handler_id = 0,
   },

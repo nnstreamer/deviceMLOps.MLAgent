@@ -39,8 +39,8 @@ class MLServiceDB
       const guint version, const std::string description);
   virtual void activate_model (const std::string name, const guint version);
   virtual void get_model (const std::string name, const gint version, gchar **model);
-  virtual void delete_model (
-      const std::string name, const guint version, const gboolean force = FALSE);
+  virtual void delete_model (const std::string name, const guint version,
+      const gboolean force = FALSE);
   virtual void set_resource (const std::string name, const std::string path,
       const std::string description, const std::string app_info);
   virtual void get_resource (const std::string name, gchar **resource);

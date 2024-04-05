@@ -47,11 +47,6 @@
     <method name="Delete">
       <arg type="s" name="name" direction="in" />
       <arg type="u" name="version" direction="in" />
-      <arg type="i" name="result" direction="out" />
-    </method>
-    <method name="DeleteForce">
-      <arg type="s" name="name" direction="in" />
-      <arg type="u" name="version" direction="in" />
       <arg type="b" name="force" direction="in" />
       <arg type="i" name="result" direction="out" />
     </method>
