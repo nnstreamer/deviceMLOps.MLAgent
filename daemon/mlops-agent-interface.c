@@ -464,9 +464,11 @@ ml_agent_model_get_all (const char *name, char **model_info)
 
 /**
  * @brief An interface exported for removing the model of @a name and @a version.
+ * @details If @a force is true, this will delete the model even if it is activated.
  */
 int
-ml_agent_model_delete (const char *name, const uint32_t version)
+ml_agent_model_delete (const char *name, const uint32_t version,
+    const int force)
 {
   MachinelearningServiceModel *mlsm;
   gboolean result;
@@ -482,34 +484,7 @@ ml_agent_model_delete (const char *name, const uint32_t version)
   }
 
   result = machinelearning_service_model_call_delete_sync (mlsm,
-      name, version, &ret, NULL, NULL);
-  g_object_unref (mlsm);
-
-  g_return_val_if_fail (ret == 0 && result, ret);
-  return 0;
-}
-
-/**
- * @brief An interface exported for forcibly removing the model of @a name and @a version if @a force is true.
- */
-int
-ml_agent_model_delete_force (const char *name, const uint32_t version, const gboolean force)
-{
-  MachinelearningServiceModel *mlsm;
-  gboolean result;
-  gint ret;
-
-  if (!STR_IS_VALID (name)) {
-    g_return_val_if_reached (-EINVAL);
-  }
-
-  mlsm = _get_proxy_new_for_bus_sync (ML_AGENT_SERVICE_MODEL);
-  if (!mlsm) {
-    g_return_val_if_reached (-EIO);
-  }
-
-  result = machinelearning_service_model_call_delete_force_sync (
-      mlsm, name, version, force, &ret, NULL, NULL);
+      name, version, force, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);

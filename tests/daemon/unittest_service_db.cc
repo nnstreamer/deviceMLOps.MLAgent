@@ -868,9 +868,9 @@ TEST (serviceDBUtil, model_delete_n)
 
   svcdb_initialize (TEST_DB_PATH);
 
-  ret = svcdb_model_delete ("", 0U);
+  ret = svcdb_model_delete ("", 0U, TRUE);
   EXPECT_NE (ret, 0);
-  ret = svcdb_model_delete (NULL, 0U);
+  ret = svcdb_model_delete (NULL, 0U, TRUE);
   EXPECT_NE (ret, 0);
 
   svcdb_finalize ();

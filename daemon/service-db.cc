@@ -675,7 +675,7 @@ MLServiceDB::get_model (const std::string name, const gint version, gchar **mode
  * @brief Delete the model.
  * @param[in] name The unique name to delete.
  * @param[in] version The version of the model to delete.
- * @param[in] force The model to delete by force (default is false). 
+ * @param[in] force The model to delete by force (default is false).
  */
 void
 MLServiceDB::delete_model (const std::string name, const guint version, const gboolean force)
@@ -877,6 +877,7 @@ svcdb_initialize (const gchar *path)
   }
 
   g_svcdb_instance = new MLServiceDB (path);
+  g_assert (g_svcdb_instance);
   g_svcdb_instance->connectDB ();
 }
 
@@ -1131,36 +1132,11 @@ svcdb_model_get_all (const gchar *name, gchar **model_info)
  * @brief Delete the model.
  * @param[in] name The unique name to delete.
  * @param[in] version The version of the model to delete.
- * @return @c 0 on success. Otherwise a negative error value.
- */
-gint
-svcdb_model_delete (const gchar *name, const guint version)
-{
-  gint ret = 0;
-  MLServiceDB *db = svcdb_get ();
-
-  try {
-    db->delete_model (name, version);
-  } catch (const std::invalid_argument &e) {
-    ml_loge ("%s", e.what ());
-    ret = -EINVAL;
-  } catch (const std::exception &e) {
-    ml_loge ("%s", e.what ());
-    ret = -EIO;
-  }
-
-  return ret;
-}
-
-/**
- * @brief Delete the model.
- * @param[in] name The unique name to delete.
- * @param[in] version The version of the model to delete.
  * @param[in] force If the force is set to @c TRUE, the target model will be forced to delete.
  * @return @c 0 on success. Otherwise a negative error value.
  */
 gint
-svcdb_model_delete_force (const gchar *name, const guint version, const gboolean force)
+svcdb_model_delete (const gchar *name, const guint version, const gboolean force)
 {
   gint ret = 0;
   MLServiceDB *db = svcdb_get ();
@@ -1177,7 +1153,6 @@ svcdb_model_delete_force (const gchar *name, const guint version, const gboolean
 
   return ret;
 }
-
 
 /**
  * @brief Set the resource with given name.

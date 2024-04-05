@@ -289,7 +289,7 @@ TEST_F (MLAgentTest, model)
   g_free (model_info);
   model_info = NULL;
 
-  ret = ml_agent_model_delete ("test-model", 0U);
+  ret = ml_agent_model_delete ("test-model", 0U, TRUE);
   EXPECT_EQ (ret, 0);
 }
 
@@ -340,7 +340,7 @@ TEST_F (MLAgentTest, model_update_description_01_n)
   ret = ml_agent_model_update_description ("test-model", (ver + 5U), "desc");
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U);
+  ret = ml_agent_model_delete ("test-model", 0U, TRUE);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
@@ -371,7 +371,7 @@ TEST_F (MLAgentTest, model_activate_01_n)
   ret = ml_agent_model_activate ("test-model", (ver + 5U));
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U);
+  ret = ml_agent_model_delete ("test-model", 0U, TRUE);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
@@ -405,7 +405,7 @@ TEST_F (MLAgentTest, model_get_01_n)
   ret = ml_agent_model_get ("test-model", (ver + 5U), &model_info);
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U);
+  ret = ml_agent_model_delete ("test-model", 0U, TRUE);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
@@ -437,7 +437,7 @@ TEST_F (MLAgentTest, model_get_activated_01_n)
   ret = ml_agent_model_get_activated ("test-model", &model_info);
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U);
+  ret = ml_agent_model_delete ("test-model", 0U, TRUE);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
@@ -477,20 +477,20 @@ TEST_F (MLAgentTest, model_delete_01_n)
       "test-model", "/path/model.tflite", FALSE, NULL, NULL, &ver);
   EXPECT_EQ (ret, 0);
 
-  ret = ml_agent_model_delete (NULL, ver);
+  ret = ml_agent_model_delete (NULL, ver, TRUE);
   EXPECT_NE (ret, 0);
-  ret = ml_agent_model_delete ("", ver);
+  ret = ml_agent_model_delete ("", ver, TRUE);
   EXPECT_NE (ret, 0);
 
   /* invalid version */
-  ret = ml_agent_model_delete ("test-model", (ver + 5U));
+  ret = ml_agent_model_delete ("test-model", (ver + 5U), TRUE);
   EXPECT_NE (ret, 0);
 
-  ret = ml_agent_model_delete ("test-model", 0U);
+  ret = ml_agent_model_delete ("test-model", 0U, TRUE);
   EXPECT_EQ (ret, 0);
 
   /* no registered model */
-  ret = ml_agent_model_delete ("test-model", 0U);
+  ret = ml_agent_model_delete ("test-model", 0U, TRUE);
   EXPECT_NE (ret, 0);
 }
 
