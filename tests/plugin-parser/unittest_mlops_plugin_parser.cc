@@ -17,6 +17,7 @@
  */
 #include <glib.h>
 #include <gmodule.h>
+#include <glib/gstdio.h>
 #include <gio/gio.h>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -395,7 +396,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install7_n)
   ASSERT_TRUE (create_and_set_file (config_file_path, json_with_invalid_format));
   EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
 
-  if (remove (config_file_path) != 0) {
+  if (g_remove (config_file_path) != 0) {
     g_printerr ("Error removing file: %s\n", g_strerror (errno));
     ASSERT_TRUE (false);
   }
@@ -413,7 +414,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install7_n)
   ASSERT_TRUE (create_and_set_file (config_file_path, json_with_no_name));
   EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
 
-  if (remove (config_file_path) != 0) {
+  if (g_remove (config_file_path) != 0) {
     g_printerr ("Error removing file: %s\n", g_strerror (errno));
     ASSERT_TRUE (false);
   }
@@ -430,7 +431,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install7_n)
   ASSERT_TRUE (create_and_set_file (config_file_path, json_with_no_name_pipeline));
   EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
 
-  if (remove (config_file_path) != 0) {
+  if (g_remove (config_file_path) != 0) {
     g_printerr ("Error removing file: %s\n", g_strerror (errno));
     ASSERT_TRUE (false);
   }
@@ -449,7 +450,7 @@ TEST_F (PkgMgrInfoMockTestFixture, rpk_install7_n)
   ASSERT_TRUE (create_and_set_file (config_file_path, json_with_no_name_resource));
   EXPECT_NE (exec_plugin_parser_func ("PKGMGR_MDPARSER_PLUGIN_INSTALL", pkgid, appid, NULL), 0);
 
-  if (remove (config_file_path) != 0) {
+  if (g_remove (config_file_path) != 0) {
     g_printerr ("Error removing file: %s\n", g_strerror (errno));
     ASSERT_TRUE (false);
   }
