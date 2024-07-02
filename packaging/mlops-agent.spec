@@ -32,7 +32,7 @@
 %define enable_test -Denable-test=false
 %define install_test -Dinstall-test=false
 
-# To generage gcov package, --define "gcov 1"
+# To generate gcov package, --define "gcov 1"
 %if 0%{?gcov:1}
 %define		unit_test 1
 %define		release_test 1

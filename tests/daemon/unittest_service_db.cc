@@ -345,9 +345,9 @@ TEST (serviceDB, delete_model_activated_n)
 }
 
 /**
- * @brief Negative test for set_pipline. DB is not initialized.
+ * @brief Negative test for set_pipeline. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, set_pipeline_n)
+TEST (serviceDBNotInitialized, set_pipeline_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -360,9 +360,9 @@ TEST (serviceDBNotInitalized, set_pipeline_n)
 }
 
 /**
- * @brief Negative test for get_pipline. DB is not initialized.
+ * @brief Negative test for get_pipeline. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, get_pipeline_n)
+TEST (serviceDBNotInitialized, get_pipeline_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -378,7 +378,7 @@ TEST (serviceDBNotInitalized, get_pipeline_n)
 /**
  * @brief Negative test for delete_pipeline. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, delete_pipeline_n)
+TEST (serviceDBNotInitialized, delete_pipeline_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -393,7 +393,7 @@ TEST (serviceDBNotInitalized, delete_pipeline_n)
 /**
  * @brief Negative test for set_model. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, set_model_n)
+TEST (serviceDBNotInitialized, set_model_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -409,7 +409,7 @@ TEST (serviceDBNotInitalized, set_model_n)
 /**
  * @brief Negative test for update_model_description. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, update_model_description_n)
+TEST (serviceDBNotInitialized, update_model_description_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -424,7 +424,7 @@ TEST (serviceDBNotInitalized, update_model_description_n)
 /**
  * @brief Negative test for activate_model. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, activate_model_n)
+TEST (serviceDBNotInitialized, activate_model_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -439,7 +439,7 @@ TEST (serviceDBNotInitalized, activate_model_n)
 /**
  * @brief Negative test for get_model. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, get_model_n)
+TEST (serviceDBNotInitialized, get_model_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -455,7 +455,7 @@ TEST (serviceDBNotInitalized, get_model_n)
 /**
  * @brief Negative test for delete_model. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, delete_model_n)
+TEST (serviceDBNotInitialized, delete_model_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -632,7 +632,7 @@ TEST (serviceDB, delete_resource_unregistered_n)
 /**
  * @brief Negative test for set_resource. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, set_resource_n)
+TEST (serviceDBNotInitialized, set_resource_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -647,7 +647,7 @@ TEST (serviceDBNotInitalized, set_resource_n)
 /**
  * @brief Negative test for get_resource. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, get_resource_n)
+TEST (serviceDBNotInitialized, get_resource_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 
@@ -663,7 +663,7 @@ TEST (serviceDBNotInitalized, get_resource_n)
 /**
  * @brief Negative test for delete_resource. DB is not initialized.
  */
-TEST (serviceDBNotInitalized, delete_resource_n)
+TEST (serviceDBNotInitialized, delete_resource_n)
 {
   MLServiceDB db (TEST_DB_PATH);
 

@@ -116,7 +116,7 @@ pkgmgrinfo_pkginfo_get_res_version (pkgmgrinfo_pkginfo_h handle, char **return_r
 }
 
 /**
- * @brief pluging-parser test fixture
+ * @brief plugin-parser test fixture
  */
 class PkgMgrInfoMockTestFixture : public ::testing::Test
 {

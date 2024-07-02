@@ -220,7 +220,7 @@ dbus_cb_core_start_pipeline (MachinelearningServicePipeline *obj,
     g_mutex_unlock (&p->lock);
 
     if (sc_ret == GST_STATE_CHANGE_FAILURE) {
-      ml_loge ("Failed to set the state of the pipline to PLAYING whose service name is %s.",
+      ml_loge ("Failed to set the state of the pipeline to PLAYING whose service name is %s.",
           p->service_name);
       result = -ESTRPIPE;
     }
@@ -256,7 +256,7 @@ dbus_cb_core_stop_pipeline (MachinelearningServicePipeline *obj,
     g_mutex_unlock (&p->lock);
 
     if (sc_ret == GST_STATE_CHANGE_FAILURE) {
-      ml_loge ("Failed to set the state of the pipline to PAUSED whose service name is %s.",
+      ml_loge ("Failed to set the state of the pipeline to PAUSED whose service name is %s.",
           p->service_name);
       result = -ESTRPIPE;
     }
@@ -337,7 +337,7 @@ dbus_cb_core_get_state (MachinelearningServicePipeline *obj,
   g_mutex_unlock (&p->lock);
 
   if (sc_ret == GST_STATE_CHANGE_FAILURE) {
-    ml_loge ("Failed to get the state of the pipline whose service name is %s.",
+    ml_loge ("Failed to get the state of the pipeline whose service name is %s.",
         p->service_name);
     result = -ESTRPIPE;
   }
