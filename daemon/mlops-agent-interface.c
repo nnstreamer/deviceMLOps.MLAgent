@@ -11,12 +11,122 @@
 #include <errno.h>
 #include <glib.h>
 #include <stdint.h>
+#include <json-glib/json-glib.h>
 
+#include "log.h"
 #include "include/mlops-agent-interface.h"
 #include "dbus-interface.h"
 #include "model-dbus.h"
 #include "pipeline-dbus.h"
 #include "resource-dbus.h"
+
+#if defined(__TIZEN__)
+#include <app_common.h>
+
+static char *
+_resolve_rpk_path_in_json (const char *json_str)
+{
+  JsonNode *node = NULL;
+  JsonArray *array = NULL;
+  JsonObject *object = NULL;
+  JsonNode *app_info_node = NULL;
+  JsonObject *app_info_object = NULL;
+  gchar *ret_json_str = NULL;
+  const gchar *app_info;
+
+  guint i, n;
+
+  g_autofree gchar *app_id = NULL;
+  if (app_get_id (&app_id) == APP_ERROR_INVALID_CONTEXT) {
+    ml_logi ("Not an Tizen APP context.");
+    return g_strdup (json_str);
+  }
+
+  node = json_from_string (json_str, NULL);
+  if (!node) {
+    ml_loge ("Failed to parse given json string.");
+    return NULL;
+  }
+
+  if (JSON_NODE_HOLDS_ARRAY (node)) {
+    array = json_node_get_array (node);
+    n = (array) ? json_array_get_length (array) : 0U;
+  } else {
+    n = 1;
+  }
+
+  if (n == 0U) {
+    ml_loge ("No data found in the given json string.");
+    return NULL;
+  }
+
+  for (i = 0; i < n; ++i) {
+    if (array) {
+      object = json_array_get_object_element (array, i);
+    } else {
+      object = json_node_get_object (node);
+    }
+
+    if (!object) {
+      ml_loge ("Failed to parse given json string.");
+      return NULL;
+    }
+
+    app_info = json_object_get_string_member (object, "app_info");
+    if (!app_info) {
+      ml_loge ("Failed to get `app_info` from the given json string.");
+      goto done;
+    }
+
+    app_info_node = json_from_string (app_info, NULL);
+    if (!app_info_node) {
+      ml_loge ("Failed to parse `app_info` from the given json string.");
+      goto done;
+    }
+
+    app_info_object = json_node_get_object (app_info_node);
+    if (!app_info_object) {
+      ml_loge ("Failed to get `app_info` object.");
+      json_node_free (app_info_node);
+      goto done;
+    }
+
+    if (g_strcmp0 (json_object_get_string_member (app_info_object, "is_rpk"), "T") == 0) {
+      gchar *new_path;
+      g_autofree gchar *global_resource_path;
+      const gchar *res_type =
+          json_object_get_string_member (app_info_object, "res_type");
+
+      const gchar *ori_path = json_object_get_string_member (object, "path");
+
+      if (app_get_res_control_global_resource_path (res_type,
+          &global_resource_path) != APP_ERROR_NONE) {
+            ml_loge ("failed to get global resource path.");
+            json_node_free (app_info_node);
+            goto done;
+      }
+
+      new_path = g_strdup_printf ("%s/%s", global_resource_path, ori_path);
+      json_object_set_string_member (object, "path", new_path);
+      g_free (new_path);
+    }
+
+    json_node_free (app_info_node);
+  }
+
+done:
+  ret_json_str = json_to_string (node, TRUE);
+  json_node_free (node);
+
+  return ret_json_str;
+}
+#else
+static char *
+_resolve_rpk_path_in_json (const char *json_str)
+{
+  return g_strdup (json_str);
+}
+#endif
 
 #define STR_IS_VALID(s) ((s) && (s)[0] != '\0')
 
@@ -390,6 +500,7 @@ ml_agent_model_get (const char *name, const uint32_t version, char **model_info)
   MachinelearningServiceModel *mlsm;
   gboolean result;
   gint ret;
+  gchar *ret_json;
 
   if (!STR_IS_VALID (name) || !model_info || version == 0U) {
     g_return_val_if_reached (-EINVAL);
@@ -401,10 +512,14 @@ ml_agent_model_get (const char *name, const uint32_t version, char **model_info)
   }
 
   result = machinelearning_service_model_call_get_sync (mlsm,
-      name, version, model_info, &ret, NULL, NULL);
+      name, version, &ret_json, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
+
+  *model_info = _resolve_rpk_path_in_json (ret_json);
+  g_free (ret_json);
+
   return 0;
 }
 
@@ -417,6 +532,7 @@ ml_agent_model_get_activated (const char *name, char **model_info)
   MachinelearningServiceModel *mlsm;
   gboolean result;
   gint ret;
+  gchar *ret_json;
 
   if (!STR_IS_VALID (name) || !model_info) {
     g_return_val_if_reached (-EINVAL);
@@ -428,10 +544,14 @@ ml_agent_model_get_activated (const char *name, char **model_info)
   }
 
   result = machinelearning_service_model_call_get_activated_sync (mlsm,
-      name, model_info, &ret, NULL, NULL);
+      name, &ret_json, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
+
+  *model_info = _resolve_rpk_path_in_json (ret_json);
+  g_free (ret_json);
+
   return 0;
 }
 
@@ -444,6 +564,7 @@ ml_agent_model_get_all (const char *name, char **model_info)
   MachinelearningServiceModel *mlsm;
   gboolean result;
   gint ret;
+  gchar *ret_json;
 
   if (!STR_IS_VALID (name) || !model_info) {
     g_return_val_if_reached (-EINVAL);
@@ -455,10 +576,14 @@ ml_agent_model_get_all (const char *name, char **model_info)
   }
 
   result = machinelearning_service_model_call_get_all_sync (mlsm,
-      name, model_info, &ret, NULL, NULL);
+      name, &ret_json, &ret, NULL, NULL);
   g_object_unref (mlsm);
 
   g_return_val_if_fail (ret == 0 && result, ret);
+
+  *model_info = _resolve_rpk_path_in_json (ret_json);
+  g_free (ret_json);
+
   return 0;
 }
 
@@ -556,6 +681,7 @@ ml_agent_resource_get (const char *name, char **res_info)
   MachinelearningServiceResource *mlsr;
   gboolean result;
   gint ret;
+  gchar *ret_json;
 
   if (!STR_IS_VALID (name) || !res_info) {
     g_return_val_if_reached (-EINVAL);
@@ -567,9 +693,13 @@ ml_agent_resource_get (const char *name, char **res_info)
   }
 
   result = machinelearning_service_resource_call_get_sync (mlsr,
-      name, res_info, &ret, NULL, NULL);
+      name, &ret_json, &ret, NULL, NULL);
   g_object_unref (mlsr);
 
   g_return_val_if_fail (ret == 0 && result, ret);
+
+  *res_info = _resolve_rpk_path_in_json (ret_json);
+  g_free (ret_json);
+
   return 0;
 }
