@@ -1,0 +1,24 @@
+name: Publish docs
+
+on:
+  schedule:
+    # 04:30 AM (KST) Mon-Fri
+    - cron: "30 19 * * 0-4"
+
+  workflow_dispatch:
+
+jobs:
+  generate_doxybook:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install packages for doxygen
+      run: sudo apt-get install doxygen unoconv graphviz texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra poppler-utils pdftk libreoffice
+    - name: Generate doxygen
+      run: ${{ github.workspace }}/tool/doxybook/book-doxygen-publish.sh
+    - name: Upload doxybook
+      uses: actions/upload-artifact@v4
+      with:
+        name: deviceMLOps.MLAgent.doxybook.pdf
+        path: ${{ github.workspace }}/book.pdf
+        compression-level: 0 # no compression
