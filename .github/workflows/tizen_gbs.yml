@@ -13,8 +13,6 @@ jobs:
         include:
           - arch: "x86_64"
             option: "--define \"unit_test 1\""
-          - arch: "i586"
-            option: "--define \"unit_test 0\""
           - arch: "armv7l"
             option: "--define \"unit_test 0\""
           - arch: "aarch64"
