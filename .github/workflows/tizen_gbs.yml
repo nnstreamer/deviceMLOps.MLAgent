@@ -19,11 +19,11 @@ jobs:
             option: "--define \"unit_test 0\""
           - arch: "aarch64"
             option: "--define \"unit_test 1\""
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - name: prepare deb sources for GBS
-      run: echo "deb [trusted=yes] http://download.tizen.org/tools/latest-release/Ubuntu_20.04/ /" | sudo tee /etc/apt/sources.list.d/tizen.list
+      run: echo "deb [trusted=yes] http://download.tizen.org/tools/latest-release/Ubuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/tizen.list
     - name: install GBS
       run: sudo apt-get update && sudo apt-get install -y gbs
     - name: configure GBS
