@@ -11,17 +11,10 @@
 #include <errno.h>
 #include <glib.h>
 #include <stdint.h>
-#include "include/mlops-agent-interface.h"
 
-#define STR_IS_VALID(s) ((s) && (s)[0] != '\0')
-
-typedef enum
-{
-  ML_AGENT_SERVICE_PIPELINE = 0,
-  ML_AGENT_SERVICE_MODEL,
-  ML_AGENT_SERVICE_RESOURCE,
-  ML_AGENT_SERVICE_END
-} ml_agent_service_type_e;
+#include "log.h"
+#include "mlops-agent-interface.h"
+#include "mlops-agent-internal.h"
 
 /**
  * @brief An interface exported for setting the description of a pipeline.

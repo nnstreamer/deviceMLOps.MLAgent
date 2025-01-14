@@ -18,10 +18,10 @@
 #ifndef __LOG_H__
 #define __LOG_H__
 
+#define AGENT_LOG_TAG "ml-agent"
+
 #if defined(__TIZEN__)
 #include <dlog.h>
-
-#define AGENT_LOG_TAG "ml-agent"
 
 #define LOG_V(prio, tag, fmt, arg...) \
   ({ do { \
@@ -33,6 +33,23 @@
 #define ml_logw(fmt, arg...) LOG_V(DLOG_WARN, AGENT_LOG_TAG, fmt, ##arg)
 #define ml_loge(fmt, arg...) LOG_V(DLOG_ERROR, AGENT_LOG_TAG, fmt, ##arg)
 #define ml_logf(fmt, arg...) LOG_V(DLOG_FATAL, AGENT_LOG_TAG, fmt, ##arg)
+#elif defined(__ANDROID__)
+#include <android/log.h>
+
+#define ml_logd(...) \
+    __android_log_print (ANDROID_LOG_DEBUG, AGENT_LOG_TAG, __VA_ARGS__)
+
+#define ml_logi(...) \
+    __android_log_print (ANDROID_LOG_INFO, AGENT_LOG_TAG, __VA_ARGS__)
+
+#define ml_logw(...) \
+    __android_log_print (ANDROID_LOG_WARN, AGENT_LOG_TAG, __VA_ARGS__)
+
+#define ml_loge(...) \
+    __android_log_print (ANDROID_LOG_ERROR, AGENT_LOG_TAG, __VA_ARGS__)
+
+#define ml_logf(...) \
+    __android_log_print (ANDROID_LOG_FATAL, AGENT_LOG_TAG, __VA_ARGS__)
 #else
 #include <glib.h>
 
