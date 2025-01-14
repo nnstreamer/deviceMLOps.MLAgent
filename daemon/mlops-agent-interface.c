@@ -14,7 +14,8 @@
 #include <json-glib/json-glib.h>
 
 #include "log.h"
-#include "include/mlops-agent-interface.h"
+#include "mlops-agent-interface.h"
+#include "mlops-agent-internal.h"
 #include "dbus-interface.h"
 #include "model-dbus.h"
 #include "pipeline-dbus.h"
@@ -126,17 +127,7 @@ _resolve_rpk_path_in_json (const char *json_str)
 {
   return g_strdup (json_str);
 }
-#endif
-
-#define STR_IS_VALID(s) ((s) && (s)[0] != '\0')
-
-typedef enum
-{
-  ML_AGENT_SERVICE_PIPELINE = 0,
-  ML_AGENT_SERVICE_MODEL,
-  ML_AGENT_SERVICE_RESOURCE,
-  ML_AGENT_SERVICE_END
-} ml_agent_service_type_e;
+#endif /* __TIZEN__ */
 
 typedef gpointer ml_agent_proxy_h;
 
