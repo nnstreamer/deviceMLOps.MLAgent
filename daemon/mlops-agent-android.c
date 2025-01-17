@@ -15,6 +15,8 @@
 #include "log.h"
 #include "mlops-agent-interface.h"
 #include "mlops-agent-internal.h"
+#include "../libsqliteX/include/sqlite3.h"
+#include "../libsqliteX/include/sqlite3ext.h"
 
 /**
  * @brief An interface exported for setting the description of a pipeline.
