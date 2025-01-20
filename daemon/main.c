@@ -21,7 +21,7 @@
 #include "gdbus-util.h"
 #include "log.h"
 #include "dbus-interface.h"
-#include "service-db-util.h"
+#include "mlops-agent-internal.h"
 
 static GMainLoop *g_mainloop = NULL;
 static gboolean verbose = FALSE;
@@ -112,7 +112,8 @@ main (int argc, char **argv)
   /* path to database */
   if (!db_path)
     db_path = g_strdup (DB_PATH);
-  svcdb_initialize (db_path);
+
+  ml_agent_initialize (db_path);
 
   g_mainloop = g_main_loop_new (NULL, FALSE);
   gdbus_get_system_connection (is_session);
@@ -129,7 +130,7 @@ main (int argc, char **argv)
   g_mainloop = NULL;
 
 error:
-  svcdb_finalize ();
+  ml_agent_finalize ();
 
   is_session = verbose = FALSE;
   g_free (db_path);

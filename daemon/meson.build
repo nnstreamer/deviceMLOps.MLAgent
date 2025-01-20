@@ -1,6 +1,7 @@
 # Machine Learning Agent
 ml_agent_incs = include_directories('.', 'include')
 ml_agent_lib_srcs = files('modules.c', 'gdbus-util.c', 'mlops-agent-interface.c',
+  'mlops-agent-internal.c', 'mlops-agent-node.c',
   'pipeline-dbus-impl.cc', 'model-dbus-impl.cc', 'resource-dbus-impl.cc', 'service-db.cc')
 
 ml_agent_deps = [
