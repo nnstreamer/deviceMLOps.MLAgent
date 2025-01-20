@@ -202,6 +202,7 @@ ml_agent_pipeline_set_description (const char *name, const char *pipeline_desc)
 {
   MachinelearningServicePipeline *mlsp;
   gboolean result;
+  gint ret;
 
   if (!STR_IS_VALID (name) || !STR_IS_VALID (pipeline_desc)) {
     g_return_val_if_reached (-EINVAL);
@@ -213,10 +214,10 @@ ml_agent_pipeline_set_description (const char *name, const char *pipeline_desc)
   }
 
   result = machinelearning_service_pipeline_call_set_pipeline_sync (mlsp,
-      name, pipeline_desc, NULL, NULL, NULL);
+      name, pipeline_desc, &ret, NULL, NULL);
   g_object_unref (mlsp);
 
-  g_return_val_if_fail (result, -EIO);
+  g_return_val_if_fail (ret == 0 && result, ret);
   return 0;
 }
 

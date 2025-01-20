@@ -15,6 +15,8 @@
 #include "log.h"
 #include "mlops-agent-interface.h"
 #include "mlops-agent-internal.h"
+#include "mlops-agent-node.h"
+#include "service-db-util.h"
 
 /**
  * @brief An interface exported for setting the description of a pipeline.
@@ -26,7 +28,7 @@ ml_agent_pipeline_set_description (const char *name, const char *pipeline_desc)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_pipeline_set (name, pipeline_desc);
 }
 
 /**
@@ -39,7 +41,7 @@ ml_agent_pipeline_get_description (const char *name, char **pipeline_desc)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_pipeline_get (name, pipeline_desc);
 }
 
 /**
@@ -52,7 +54,7 @@ ml_agent_pipeline_delete (const char *name)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_pipeline_delete (name);
 }
 
 /**
@@ -65,7 +67,7 @@ ml_agent_pipeline_launch (const char *name, int64_t * id)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return mlops_node_create (name, MLOPS_NODE_TYPE_PIPELINE, id);
 }
 
 /**
@@ -74,7 +76,7 @@ ml_agent_pipeline_launch (const char *name, int64_t * id)
 int
 ml_agent_pipeline_start (const int64_t id)
 {
-  return 0;
+  return mlops_node_start (id);
 }
 
 /**
@@ -83,7 +85,7 @@ ml_agent_pipeline_start (const int64_t id)
 int
 ml_agent_pipeline_stop (const int64_t id)
 {
-  return 0;
+  return mlops_node_stop (id);
 }
 
 /**
@@ -92,7 +94,7 @@ ml_agent_pipeline_stop (const int64_t id)
 int
 ml_agent_pipeline_destroy (const int64_t id)
 {
-  return 0;
+  return mlops_node_destroy (id);
 }
 
 /**
@@ -101,7 +103,7 @@ ml_agent_pipeline_destroy (const int64_t id)
 int
 ml_agent_pipeline_get_state (const int64_t id, int *state)
 {
-  return 0;
+  return mlops_node_get_state (id, (GstState *) state);
 }
 
 /**
@@ -115,7 +117,8 @@ ml_agent_model_register (const char *name, const char *path,
   if (!STR_IS_VALID (name) || !STR_IS_VALID (path) || !version) {
     g_return_val_if_reached (-EINVAL);
   }
-  return 0;
+
+  return svcdb_model_add (name, path, activate, description, app_info, version);
 }
 
 /**
@@ -128,7 +131,8 @@ ml_agent_model_update_description (const char *name,
   if (!STR_IS_VALID (name) || !STR_IS_VALID (description) || version == 0U) {
     g_return_val_if_reached (-EINVAL);
   }
-  return 0;
+
+  return svcdb_model_update_description (name, version, description);
 }
 
 /**
@@ -141,7 +145,7 @@ ml_agent_model_activate (const char *name, const uint32_t version)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_model_activate (name, version);
 }
 
 /**
@@ -154,7 +158,7 @@ ml_agent_model_get (const char *name, const uint32_t version, char **model_info)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_model_get (name, version, model_info);
 }
 
 /**
@@ -167,7 +171,7 @@ ml_agent_model_get_activated (const char *name, char **model_info)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_model_get_activated (name, model_info);
 }
 
 /**
@@ -180,7 +184,7 @@ ml_agent_model_get_all (const char *name, char **model_info)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_model_get_all (name, model_info);
 }
 
 /**
@@ -195,7 +199,7 @@ ml_agent_model_delete (const char *name, const uint32_t version,
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_model_delete (name, version, force);
 }
 
 /**
@@ -209,7 +213,7 @@ ml_agent_resource_add (const char *name, const char *path,
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_resource_add (name, path, description, app_info);
 }
 
 /**
@@ -222,7 +226,7 @@ ml_agent_resource_delete (const char *name)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_resource_delete (name);
 }
 
 /**
@@ -235,5 +239,5 @@ ml_agent_resource_get (const char *name, char **res_info)
     g_return_val_if_reached (-EINVAL);
   }
 
-  return 0;
+  return svcdb_resource_get (name, res_info);
 }

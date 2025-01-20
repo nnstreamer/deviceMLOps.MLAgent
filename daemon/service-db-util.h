@@ -14,6 +14,7 @@
 #define __SERVICE_DB_UTIL_H__
 
 #include <glib.h>
+#include <stdbool.h>
 
 G_BEGIN_DECLS
 

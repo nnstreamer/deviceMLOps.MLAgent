@@ -29,6 +29,16 @@ typedef enum
   ML_AGENT_SERVICE_END
 } ml_agent_service_type_e;
 
+/**
+ * @brief Internal function to initialize mlops-agent interface.
+ */
+void ml_agent_initialize (const char *db_path);
+
+/**
+ * @brief Internal function to finalize mlops-agent interface.
+ */
+void ml_agent_finalize (void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
