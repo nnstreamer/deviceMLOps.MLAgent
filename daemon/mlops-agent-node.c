@@ -153,6 +153,8 @@ mlops_node_create (const gchar * name, const mlops_node_type_e type,
   GError *err = NULL;
   GstStateChangeReturn ret;
 
+  g_return_val_if_fail (id != NULL, -EINVAL);
+
   switch (type) {
     case MLOPS_NODE_TYPE_PIPELINE:
     {
@@ -173,9 +175,6 @@ mlops_node_create (const gchar * name, const mlops_node_type_e type,
         desc, (err) ? err->message : "unknown reason");
     g_clear_error (&err);
 
-    if (pipeline)
-      gst_object_unref (pipeline);
-
     result = -ESTRPIPE;
     goto error;
   }
@@ -186,12 +185,11 @@ mlops_node_create (const gchar * name, const mlops_node_type_e type,
     ml_loge
         ("Failed to set the state of the pipeline to PAUSED. For the detail, please check the GStreamer log message.");
 
-    gst_object_unref (pipeline);
     result = -ESTRPIPE;
     goto error;
   }
 
-  /* Add node info into hash table. */
+  /* Final step, add node info into hash table. */
   node = g_new0 (mlops_node_s, 1);
   node->type = type;
   node->id = g_get_monotonic_time ();
@@ -204,12 +202,12 @@ mlops_node_create (const gchar * name, const mlops_node_type_e type,
   g_hash_table_insert (g_mlops_node_table, GINT_TO_POINTER (node->id), node);
   G_UNLOCK (mlops_node_table);
 
+  *id = node->id;
+
 error:
-  if (result == 0) {
-    *id = node->id;
-  } else {
-    if (node)
-      _mlops_node_free (node);
+  if (result != 0) {
+    if (pipeline)
+      gst_object_unref (pipeline);
   }
 
   g_free (desc);
