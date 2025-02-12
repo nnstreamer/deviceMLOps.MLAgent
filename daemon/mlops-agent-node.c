@@ -61,16 +61,18 @@ static int
 _mlops_node_set_pipeline_state (mlops_node_s * node, GstState state)
 {
   GstStateChangeReturn ret;
+  gint64 nid;
 
   g_return_val_if_fail (node != NULL, -EINVAL);
 
   g_mutex_lock (&node->lock);
+  nid = node->id;
   ret = gst_element_set_state (node->element, state);
   g_mutex_unlock (&node->lock);
 
   if (ret == GST_STATE_CHANGE_FAILURE) {
     ml_loge ("Failed to set the state of the pipeline to %s with ID %"
-        G_GINT64_FORMAT, gst_element_state_get_name (state), node->id);
+        G_GINT64_FORMAT, gst_element_state_get_name (state), nid);
     return -ESTRPIPE;
   }
 
