@@ -1,4 +1,4 @@
-name: Native build in Ubuntu 20.04/22.04 with GCC-13
+name: Native build in Ubuntu 22.04 with GCC-13
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ jobs:
       BUILD_DIR: build
     strategy:
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04 ]
+        os: [ ubuntu-22.04 ]
 
     steps:
     - uses: actions/checkout@v4
