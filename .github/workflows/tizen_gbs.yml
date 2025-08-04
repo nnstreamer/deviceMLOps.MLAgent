@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: prepare deb sources for GBS
-      run: echo "deb [trusted=yes] http://download.tizen.org/tools/latest-release/Ubuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/tizen.list
+      run: echo "deb [trusted=yes] http://download.tizen.org/tools/latest/Ubuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/tizen.list
     - name: install GBS
       run: sudo apt-get update && sudo apt-get install -y gbs
     - name: configure GBS
