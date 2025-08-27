@@ -50,7 +50,7 @@ Summary:	AI service agent for MLOps and ML(Machine Learning) API
 # Synchronize the version information for ML-Agent.
 # 1. Tizen   : ./packaging/mlops-agent.spec
 # 2. Meson   : ./meson.build
-Version:	1.8.6
+Version:	1.8.8
 Release:	0
 Group:		Machine Learning/ML Framework
 Packager:	Sangjung Woo <sangjung.woo@samsung.com>
@@ -294,6 +294,9 @@ install -m 0755 packaging/run-unittest.sh %{buildroot}%{_bindir}/tizen-unittests
 %endif # unit_test
 
 %changelog
+* Wed Aug 27 2025 Sangjung Woo <sangjung.woo@samsung.com>
+- Release of 1.8.8 (Tizen 10.0 M2)
+
 * Mon Sep 02 2024 Sangjung Woo <sangjung.woo@samsung.com>
 - Release of 1.8.6 (Tizen 9.0 M2)
 
