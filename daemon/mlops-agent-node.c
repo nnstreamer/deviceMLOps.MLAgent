@@ -43,8 +43,7 @@ _mlops_node_get (const int64_t id)
   mlops_node_s *node = NULL;
 
   G_LOCK (mlops_node_table);
-  node = (mlops_node_s *) g_hash_table_lookup (g_mlops_node_table,
-      GINT_TO_POINTER (id));
+  node = (mlops_node_s *) g_hash_table_lookup (g_mlops_node_table, &id);
   G_UNLOCK (mlops_node_table);
 
   if (!node) {
@@ -121,8 +120,8 @@ mlops_node_initialize (void)
 {
   G_LOCK (mlops_node_table);
   if (!g_mlops_node_table) {
-    g_mlops_node_table = g_hash_table_new_full (g_direct_hash, g_direct_equal,
-        NULL, _mlops_node_free);
+    g_mlops_node_table = g_hash_table_new_full (g_int64_hash, g_int64_equal,
+        g_free, _mlops_node_free);
   }
   g_assert (g_mlops_node_table != NULL);
   G_UNLOCK (mlops_node_table);
@@ -150,6 +149,7 @@ mlops_node_create (const gchar * name, const mlops_node_type_e type,
 {
   mlops_node_s *node = NULL;
   gint result = -EIO;
+  gint64 *node_id = NULL;
   gchar *desc = NULL;
   GstElement *pipeline = NULL;
   GError *err = NULL;
@@ -200,8 +200,11 @@ mlops_node_create (const gchar * name, const mlops_node_type_e type,
   node->description = g_strdup (desc);
   g_mutex_init (&node->lock);
 
+  node_id = g_new (gint64, 1);
+  *node_id = node->id;
+
   G_LOCK (mlops_node_table);
-  g_hash_table_insert (g_mlops_node_table, GINT_TO_POINTER (node->id), node);
+  g_hash_table_insert (g_mlops_node_table, node_id, node);
   G_UNLOCK (mlops_node_table);
 
   *id = node->id;
@@ -251,7 +254,7 @@ mlops_node_destroy (const int64_t id)
   node = _mlops_node_get (id);
   if (node) {
     G_LOCK (mlops_node_table);
-    g_hash_table_remove (g_mlops_node_table, GINT_TO_POINTER (id));
+    g_hash_table_remove (g_mlops_node_table, &id);
     G_UNLOCK (mlops_node_table);
   }
 
