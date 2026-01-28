@@ -186,8 +186,7 @@ lcov -i -c -o unittest_base.info -d . -b $(pwd) --ignore-errors mismatch --exclu
 popd
 %endif # testcoverage
 
-# If gcov package generation is enabled, pass the test from GBS.
-%if 0%{?unit_test} && !0%{?gcov}
+%if 0%{?unit_test}
 bash %{test_script} ./tests/daemon/unittest_ml_agent
 bash %{test_script} ./tests/daemon/unittest_service_db
 bash %{test_script} ./tests/daemon/unittest_gdbus_util
