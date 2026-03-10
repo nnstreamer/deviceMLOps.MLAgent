@@ -873,12 +873,18 @@ svcdb_initialize (const gchar *path)
 {
   if (g_svcdb_instance) {
     ml_logw ("ML service DB is already opened, close old DB.");
-    delete g_svcdb_instance;
+    svcdb_finalize ();
   }
 
-  g_svcdb_instance = new MLServiceDB (path);
+  try {
+    g_svcdb_instance = new MLServiceDB (path);
+    g_svcdb_instance->connectDB ();
+  } catch (const std::exception &e) {
+    ml_loge ("%s", e.what ());
+    svcdb_finalize ();
+  }
+
   g_assert (g_svcdb_instance);
-  g_svcdb_instance->connectDB ();
 }
 
 /**
