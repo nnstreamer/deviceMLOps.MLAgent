@@ -18,6 +18,7 @@
 #include "log.h"
 
 static GDBusConnection *g_dbus_sys_conn = NULL;
+static guint g_dbus_name_owner_id = 0;
 
 /**
  * @brief Export the DBus interface at the Object path on the bus connection.
@@ -56,11 +57,14 @@ name_acquired_cb (GDBusConnection * connection,
 int
 gdbus_get_name (const char *name)
 {
-  guint id;
+  if (g_dbus_name_owner_id > 0) {
+    g_bus_unown_name (g_dbus_name_owner_id);
+    g_dbus_name_owner_id = 0;
+  }
 
-  id = g_bus_own_name_on_connection (g_dbus_sys_conn, name,
+  g_dbus_name_owner_id = g_bus_own_name_on_connection (g_dbus_sys_conn, name,
       G_BUS_NAME_OWNER_FLAGS_NONE, name_acquired_cb, NULL, NULL, NULL);
-  if (id == 0)
+  if (g_dbus_name_owner_id == 0)
     return -ENOSYS;
 
   return 0;
@@ -140,6 +144,11 @@ gdbus_get_system_connection (gboolean is_session)
 void
 gdbus_put_system_connection (void)
 {
+  if (g_dbus_name_owner_id > 0) {
+    g_bus_unown_name (g_dbus_name_owner_id);
+    g_dbus_name_owner_id = 0;
+  }
+
   g_clear_object (&g_dbus_sys_conn);
 }
 
