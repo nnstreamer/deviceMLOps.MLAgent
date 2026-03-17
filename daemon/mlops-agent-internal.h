@@ -32,7 +32,7 @@ typedef enum
 /**
  * @brief Internal function to initialize mlops-agent interface.
  */
-void ml_agent_initialize (const char *db_path);
+int ml_agent_initialize (const char *db_path);
 
 /**
  * @brief Internal function to finalize mlops-agent interface.

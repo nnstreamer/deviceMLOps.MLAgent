@@ -868,9 +868,11 @@ G_BEGIN_DECLS
 /**
  * @brief Initialize the service-db.
  */
-void
+gint
 svcdb_initialize (const gchar *path)
 {
+  gint ret = 0;
+
   if (g_svcdb_instance) {
     ml_logw ("ML service DB is already opened, close old DB.");
     svcdb_finalize ();
@@ -880,11 +882,12 @@ svcdb_initialize (const gchar *path)
     g_svcdb_instance = new MLServiceDB (path);
     g_svcdb_instance->connectDB ();
   } catch (const std::exception &e) {
-    ml_loge ("%s", e.what ());
+    ml_loge ("Failed to initialize database: %s", e.what ());
     svcdb_finalize ();
+    ret = -EIO;
   }
 
-  g_assert (g_svcdb_instance);
+  return ret;
 }
 
 /**

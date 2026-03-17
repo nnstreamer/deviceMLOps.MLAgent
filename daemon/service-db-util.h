@@ -18,7 +18,7 @@
 
 G_BEGIN_DECLS
 
-void svcdb_initialize (const gchar *path);
+gint svcdb_initialize (const gchar *path);
 void svcdb_finalize (void);
 gint svcdb_pipeline_set (const gchar *name, const gchar *description);
 gint svcdb_pipeline_get (const gchar *name, gchar **description);
