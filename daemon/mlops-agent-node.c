@@ -115,16 +115,24 @@ _mlops_node_free (gpointer data)
 /**
  * @brief Initialize mlops node info.
  */
-void
+int
 mlops_node_initialize (void)
 {
+  int ret = 0;
+
   G_LOCK (mlops_node_table);
   if (!g_mlops_node_table) {
     g_mlops_node_table = g_hash_table_new_full (g_int64_hash, g_int64_equal,
         g_free, _mlops_node_free);
   }
-  g_assert (g_mlops_node_table != NULL);
+
+  if (g_mlops_node_table == NULL) {
+    ml_logw ("Failed to initialize mlops-agent node table.");
+    ret = -EIO;
+  }
   G_UNLOCK (mlops_node_table);
+
+  return ret;
 }
 
 /**

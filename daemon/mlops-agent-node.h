@@ -35,7 +35,7 @@ typedef enum
 /**
  * @brief Initialize mlops node info.
  */
-void mlops_node_initialize (void);
+int mlops_node_initialize (void);
 
 /**
  * @brief Finalize mlops node info.

@@ -16,14 +16,27 @@
 /**
  * @brief Internal function to initialize mlops-agent interface.
  */
-void
+int
 ml_agent_initialize (const char *db_path)
 {
-  g_assert (STR_IS_VALID (db_path));
-  g_assert (g_file_test (db_path, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR));
+  int ret;
 
-  svcdb_initialize (db_path);
-  mlops_node_initialize ();
+  if (!STR_IS_VALID (db_path) ||
+      !g_file_test (db_path, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
+    ml_loge ("Failed to initialize mlops-agent, database path (%s) is invalid.", db_path);
+    return -EINVAL;
+  }
+
+  ret = svcdb_initialize (db_path);
+  if (ret < 0)
+    goto error;
+
+  ret = mlops_node_initialize ();
+
+error:
+  if (ret < 0)
+    ml_agent_finalize ();
+  return ret;
 }
 
 /**

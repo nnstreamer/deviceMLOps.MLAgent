@@ -51,8 +51,10 @@ postinit (void)
   signal (SIGTERM, handle_sigterm);
 
   ret = gdbus_get_name (DBUS_ML_BUS_NAME);
-  if (ret < 0)
+  if (ret < 0) {
+    ml_loge ("Failed to get mlops-agent dbus.");
     return ret;
+  }
 
   return 0;
 }
@@ -104,23 +106,28 @@ main (int argc, char **argv)
 {
   int ret = 0;
 
-  if (parse_args (&argc, &argv)) {
-    ret = -EINVAL;
+  ret = parse_args (&argc, &argv);
+  if (ret < 0)
     goto error;
-  }
 
   /* path to database */
   if (!db_path)
     db_path = g_strdup (DB_PATH);
 
-  ml_agent_initialize (db_path);
+  ret = ml_agent_initialize (db_path);
+  if (ret < 0)
+    goto error;
 
   g_mainloop = g_main_loop_new (NULL, FALSE);
-  gdbus_get_system_connection (is_session);
+  ret = gdbus_get_system_connection (is_session);
+  if (ret < 0)
+    goto error;
 
   init_modules (NULL);
-  if (postinit () < 0)
-    ml_loge ("cannot init system");
+
+  ret = postinit ();
+  if (ret < 0)
+    goto error;
 
   g_main_loop_run (g_mainloop);
   exit_modules (NULL);
@@ -133,7 +140,6 @@ error:
   ml_agent_finalize ();
 
   is_session = verbose = FALSE;
-  g_free (db_path);
-  db_path = NULL;
+  g_clear_pointer (&db_path, g_free);
   return ret;
 }
