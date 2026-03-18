@@ -58,10 +58,12 @@ _resolve_rpk_path_in_json (const char *json_str)
 
   if (n == 0U) {
     ml_loge ("No data found in the given json string.");
-    return NULL;
+    goto out_err;
   }
 
   for (i = 0; i < n; ++i) {
+    app_info_node = NULL;
+
     if (array) {
       object = json_array_get_object_element (array, i);
     } else {
@@ -70,7 +72,7 @@ _resolve_rpk_path_in_json (const char *json_str)
 
     if (!object) {
       ml_loge ("Failed to parse given json string.");
-      return NULL;
+      goto out_err;
     }
 
     app_info = json_object_get_string_member (object, "app_info");
@@ -88,7 +90,6 @@ _resolve_rpk_path_in_json (const char *json_str)
     app_info_object = json_node_get_object (app_info_node);
     if (!app_info_object) {
       ml_loge ("Failed to get `app_info` object.");
-      json_node_free (app_info_node);
       goto done;
     }
 
@@ -103,7 +104,6 @@ _resolve_rpk_path_in_json (const char *json_str)
       if (app_get_res_control_global_resource_path (res_type,
           &global_resource_path) != APP_ERROR_NONE) {
             ml_loge ("failed to get global resource path.");
-            json_node_free (app_info_node);
             goto done;
       }
 
@@ -113,13 +113,25 @@ _resolve_rpk_path_in_json (const char *json_str)
     }
 
     json_node_free (app_info_node);
+    app_info_node = NULL;
   }
 
 done:
+  if (app_info_node)
+    json_node_free (app_info_node);
+
   ret_json_str = json_to_string (node, TRUE);
   json_node_free (node);
 
   return ret_json_str;
+
+out_err:
+  if (app_info_node)
+    json_node_free (app_info_node);
+  if (node)
+    json_node_free (node);
+
+  return NULL;
 }
 #else
 static char *

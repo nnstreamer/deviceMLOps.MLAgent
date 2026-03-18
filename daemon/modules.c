@@ -78,4 +78,7 @@ exit_modules (void *data)
     if (module->exit)
       module->exit (data);
   }
+
+  g_list_free (module_head);
+  module_head = NULL;
 }
