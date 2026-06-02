@@ -169,7 +169,7 @@ meson setup --buildtype=plain --prefix=%{_prefix} --sysconfdir=%{_sysconfdir} --
 	--bindir=%{_bindir} --includedir=%{_includedir} \
 	%{enable_test} %{install_test} %{?testcoverage:-Db_coverage=true} \
 	%{?with_tizen:-Denable-tizen=true} \
-	-Dservice-db-path=%{?with_tizen:%{TZ_SYS_GLOBALUSER_DB}}%{!?with_tizen:%{expand:%{?service_db_path}}%{?!service_db_path:.}} \
+	-Dservice-db-path=%{?with_tizen:%{TZ_SYS_DB}}%{!?with_tizen:%{expand:%{?service_db_path}}%{?!service_db_path:.}} \
 	%{service_db_key_prefix} \
 	%{builddir}
 
